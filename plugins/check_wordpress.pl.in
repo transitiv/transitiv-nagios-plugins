@@ -1,0 +1,146 @@
+#!@PERL@ -w
+# vim: et sts=4 sw=4 ts=4
+# nagios: +epn
+#
+# @COPYRIGHT@
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+# Please send comments, bugs and feature requests to @BUGREPORT@
+
+use strict;
+use LWP::UserAgent;
+use Nagios::Plugin;
+
+use constant {
+    VERSION     => '@VERSION@',
+    BLURB       => q{This plugin tests whether the website on the specified host is running
+the latest version of WordPress. The site must provide a generator
+meta tag in order to determine the currently installed version (this
+is the default in most themes).},
+    SHORTNAME   => 'check_wordpress',
+    USAGE       => q{Usage: %s -I <address> [-H <virtualhost>] [-u <uri>]
+       [-p <port>] [-t <timeout>]},
+    LICENSE     => q{@COPYRIGHT@
+
+This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
+It may be used, redistributed and/or modified under the terms of the
+ISC Licence (see http://opensource.org/licenses/isc-license.txt).},
+    TIMEOUT     => 10,
+    WP_API_URI  => 'http://api.wordpress.org/core/version-check/1.5/?version=',
+};
+
+my $np = Nagios::Plugin->new(
+    version     => VERSION,
+    blurb       => BLURB,
+    shortname   => SHORTNAME,
+    usage       => USAGE,
+    license     => LICENSE,
+    timeout     => TIMEOUT,
+);
+
+$np->add_arg(
+    spec        => 'hostname|H=s',
+    help        => 'Host name argument for servers using host headers (virtual hosts)',
+    label       => 'ADDRESS',
+);
+
+$np->add_arg(
+    spec        => 'address|I=s',
+    help        => 'IP address or Host name (use an address if possible to prevent a DNS query)',
+    label       => 'ADDRESS',
+    required    => 1,
+);
+
+$np->add_arg(
+    spec        => 'port|p=i',
+    help        => 'Port number (default: %s)',
+    label       => 'INTEGER',
+    default     => 80,
+);
+
+$np->add_arg(
+    spec        => 'url|u=s',
+    help        => 'URL to GET (default: %s)',
+    label       => 'PATH',
+    default     => '/',
+);
+
+$np->getopts;
+
+my $ua = LWP::UserAgent->new(
+    agent       => sprintf("%s v%s", SHORTNAME, VERSION),
+    max_size    => 2048,
+    timeout     => $np->opts->timeout,
+);
+
+my $resp;
+
+if ($np->opts->hostname && $np->opts->address) {
+    $resp = $ua->get(
+        sprintf(
+            "http://%s:%i%s",
+            $np->opts->address,
+            $np->opts->port,
+            $np->opts->url
+        ),
+        host => $np->opts->hostname
+    );
+} else {
+    $resp = $ua->get(
+        sprintf(
+            "http://%s:%i%s",
+            $np->opts->address,
+            $np->opts->port,
+            $np->opts->url
+        )
+    );
+}
+
+my $wp_version;
+
+if ($resp->is_success) {
+    if ($resp->decoded_content =~ /<meta name="generator"\s+content="WordPress(?:&nbsp;|\s+)([.\d]+)(?:-\S+)?"\s*\/>/i) {
+        $wp_version = $1;
+    } else {
+        $np->nagios_die(
+            sprintf(
+                "WordPress version string not found on `%s'",
+                $np->opts->hostname || $np->opts->address
+            )
+        );
+    }
+} else {
+    $np->nagios_die(
+        'Request error: ' . $resp->status_line
+    );
+}
+
+$resp = $ua->get(WP_API_URI . $wp_version);
+
+if (!$resp->is_success) {
+    $np->nagios_die(
+        'WordPress API request error: ' . $resp->status_line
+    );
+}
+
+my @status = split(/\n/, $resp->decoded_content);
+my $code = ($status[0] eq 'latest' ? OK : CRITICAL);
+
+$np->nagios_exit(
+    $code,
+    sprintf(
+        "Latest version is '%s'. Installed version is '%s'.",
+        $status[3], $wp_version
+    )
+);

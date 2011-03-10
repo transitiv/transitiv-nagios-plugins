@@ -1,0 +1,9 @@
+define command {
+	command_name	check_wordpress
+	command_line	@PLUGINDIR@/check_wordpress.pl -I '$HOSTADDRESS$'
+}
+
+define command {
+	command_name	check_wordpress_vhost
+	command_line	@PLUGINDIR@/check_wordpress.pl -I '$HOSTADDRESS$' -H '$ARG1$'
+}

@@ -1,0 +1,9 @@
+define command {
+	command_name	check_cisco_load
+	command_line	@PLUGINDIR@/check_cisco_load.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
+
+define command {
+	command_name	check_cisco_load_old
+	command_line	@PLUGINDIR@/check_cisco_load.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$' -o
+}

@@ -1,0 +1,9 @@
+define command {
+	command_name	check_snmp_printer
+	command_line	@PLUGINDIR@/check_snmp_printer.pl -H '$HOSTADDRESS$' -C '$ARG1$'
+}
+
+define command {
+	command_name	check_snmpv2_printer
+	command_line	@PLUGINDIR@/check_snmp_printer.pl -H '$HOSTADDRESS$' -C '$ARG1$' -2
+}

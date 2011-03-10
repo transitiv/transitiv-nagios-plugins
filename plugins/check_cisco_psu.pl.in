@@ -1,0 +1,201 @@
+#!@PERL@ -w
+# vim: et sts=4 sw=4 ts=4
+# nagios: +epn
+#
+# @COPYRIGHT@
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+# Please send comments, bugs and feature requests to @BUGREPORT@
+
+use strict;
+use Net::SNMP qw(:snmp);
+use Nagios::Plugin;
+
+use constant {
+    VERSION     => '@VERSION@',
+    BLURB       => q{This plugin checks the status of PSUs on Cisco devices that support
+the CISCO-ENVMON MIB. Currently only SNMPv2 is supported.},
+    SHORTNAME   => 'check_cisco_psu',
+    USAGE       => q{Usage: %s -H <host> [-C <community>] [-i] [-t <timeout>]},
+    LICENSE     => q{@COPYRIGHT@
+
+This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
+It may be used, redistributed and/or modified under the terms of the
+ISC Licence (see http://opensource.org/licenses/isc-license.txt).},
+    TIMEOUT     => 10,
+};
+
+# CISCO-ENVMON-MIB::ciscoEnvMonSupplyStatusTable
+my $status_table_oid = ".1.3.6.1.4.1.9.9.13.1.5.1";
+# CISCO-ENVMON-MIB::ciscoEnvMonSupplyStatusDescr
+my $desc_oid = ".1.3.6.1.4.1.9.9.13.1.5.1.2";
+# CISCO-ENVMON-MIB::ciscoEnvMonSupplySource
+# The power supply source.
+#   unknown(1):             Power supply source unknown
+#   ac(2):                  AC power supply
+#   dc(3):                  DC power supply
+#   externalPowerSupply(4): External power supply
+#   internalRedundant(5):   Internal redundant power supply
+my $source_oid = ".1.3.6.1.4.1.9.9.13.1.5.1.4";
+my %source_hash = (
+    0   => "",
+    1   => "unknown",
+    2   => "ac",
+    3   => "dc",
+    4   => "external",
+    5   => "redundant",
+);
+# CISCO-ENVMON-MIB::ciscoEnvMonSupplyState
+# Represents the state of a device being monitored.
+# Valid values are:
+#
+# normal(1):         the environment is good, such as low
+#                    temperature.
+#
+# warning(2):        the environment is bad, such as temperature
+#                    above normal operation range but not too
+#                    high.
+#
+# critical(3):       the environment is very bad, such as
+#                    temperature much higher than normal
+#                    operation limit.
+#
+# shutdown(4):       the environment is the worst, the system
+#                    should be shutdown immediately.
+#
+# notPresent(5):     the environmental monitor is not present,
+#                    such as temperature sensors do not exist.
+#
+# notFunctioning(6): the environmental monitor does not 
+#                    function properly, such as a temperature
+#                    sensor generates a abnormal data like
+#                    1000 C.
+my $state_oid = ".1.3.6.1.4.1.9.9.13.1.5.1.3";
+
+use constant {
+    PSU_NORMAL          => 1,
+    PSU_WARNING         => 2,
+    PSU_CRITICAL        => 3,
+    PSU_SHUTDOWN        => 4,
+    PSU_NOTPRESENT      => 5,
+    PSU_NOTFUNCTIONING  => 6,
+};
+
+# helper function to strip whitespace from the beginning and end of a string
+sub strip($) {
+    my $val = shift;
+
+    $val =~ s/^\s+//;
+    $val =~ s/\s+$//;
+
+    return $val;
+}
+
+my $np = Nagios::Plugin->new(
+    version     => VERSION,
+    blurb       => BLURB,
+    shortname   => SHORTNAME,
+    usage       => USAGE,
+    license     => LICENSE,
+    timeout     => TIMEOUT,
+);
+
+$np->add_arg(
+    spec        => 'host|H=s',
+    help        => q{IP address or hostname (use an IP address if possible to prevent a
+   DNS query)},
+    label       => 'ADDRESS',
+    required    => 1,
+);
+
+$np->add_arg(
+    spec        => 'community|C=s',
+    help        => 'SNMP community string (default: %s)',
+    default     => 'public',
+);
+
+$np->add_arg(
+    spec        => 'ignore-non-functional|i',
+    help        => q{Do not exit with CRITICAL status when PSUs are reported as
+   non-functional},
+);
+
+$np->getopts;
+
+alarm $np->opts->timeout;
+
+my ($session, $error) = Net::SNMP->session(
+    -hostname   => $np->opts->host,
+    -version    => '2',
+    -community  => $np->opts->community,
+    -timeout    => $np->opts->timeout/4,
+    -port       => 161,
+    -retries    => 1,
+);
+
+if (! defined($session)) {
+    alarm 0;
+    $np->nagios_die($error);
+}
+
+my $result = $session->get_table(
+    -baseoid    => $status_table_oid,
+);
+
+if (! defined($result)) {
+    alarm 0;
+    $error = $session->error;
+    $session->close();
+    $np->nagios_die($error);
+}
+
+# disable the alarm now we've run the queries
+alarm 0;
+
+my (@descs, @states, @sources);
+
+foreach my $key (oid_lex_sort(keys %$result)) {
+    if (oid_base_match($desc_oid, $key)) {
+        push(@descs, strip($$result{$key}));
+    } elsif (oid_base_match($state_oid, $key)) {
+        push(@states, $$result{$key});
+    } elsif (oid_base_match($source_oid, $key)) {
+        push(@sources, $$result{$key});
+    }
+}
+
+my $len = scalar(@descs);
+
+for (my $i = 0; $i < $len; ++$i) {
+    if ($states[$i] == PSU_NORMAL) {
+        $np->add_message(OK, $descs[$i] . ": normal ($source_hash{$sources[$i]})");
+    } elsif ($states[$i] == PSU_WARNING) {
+        $np->add_message(WARNING, $descs[$i] . ": warning ($source_hash{$sources[$i]})");
+    } elsif ($states[$i] == PSU_CRITICAL || $states[$i] == PSU_SHUTDOWN) {
+        $np->add_message(CRITICAL,
+            $descs[$i] . ": " . ($states[$i] == PSU_CRITICAL ? "critical" : "shutdown") .
+                " ($source_hash{$sources[$i]})"
+        );
+    } elsif ($states[$i] == PSU_NOTFUNCTIONING) {
+        if ($np->opts->{'ignore-non-functional'}) {
+            $np->add_message(OK, $descs[$i] . ": non-functional ($source_hash{$sources[$i]})");
+        } else {
+            $np->add_message(CRITICAL, $descs[$i] .
+                ": non-functional ($source_hash{$sources[$i]})");
+        }
+    }
+}
+
+my ($code, $message) = $np->check_messages(join => ', ');
+$np->nagios_exit($code, $message);

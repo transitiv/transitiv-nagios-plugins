@@ -1,0 +1,9 @@
+define command {
+	command_name	check_cisco_temperatures
+	command_line	@PLUGINDIR@/check_cisco_temperatures.pl -H '$HOSTADDRESS$' -C '$ARG1$'
+}
+
+define command {
+	command_name	check_cisco_temperatures_ignore_nonfunctional
+	command_line	@PLUGINDIR@/check_cisco_load.pl -H '$HOSTADDRESS$' -C '$ARG1$' -i
+}

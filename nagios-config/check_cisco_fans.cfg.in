@@ -1,0 +1,9 @@
+define command {
+	command_name	check_cisco_fans
+	command_line	@PLUGINDIR@/check_cisco_fans.pl -H '$HOSTADDRESS$' -C '$ARG1$'
+}
+
+define command {
+	command_name	check_cisco_fans_ignore_nonfunctional
+	command_line	@PLUGINDIR@/check_cisco_fans.pl -H '$HOSTADDRESS$' -C '$ARG1$' -i
+}

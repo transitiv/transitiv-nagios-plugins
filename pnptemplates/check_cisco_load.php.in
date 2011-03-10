@@ -1,0 +1,30 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_cisco_load.pl
+# Distributed with @PACKAGE_STRING@
+#
+$opt[1] = "--vertical-label 'Load %' --slope-mode -l0 --title '5 Minute CPU Load Percentage for $hostname'";
+$def[1] = rrd::def('load5min', $RRDFILE[1], $DS[1], 'AVERAGE');
+$def[1] .= rrd::area('load5min', '#FF0000FF', '5 min %');
+$def[1] .= rrd::gprint('load5min', array('LAST', 'AVERAGE', 'MAX'), '%6.0lf');
+$def[1] .= rrd::line1('load5min', '#000000');
+
+$opt[2] = "--vertical-label 'Load %' --slope-mode -l0 --title '1 Minute CPU Load Percentage for $hostname'";
+$def[2] = rrd::def('load1min', $RRDFILE[1], $DS[2], 'AVERAGE');
+$def[2] .= rrd::area('load1min', '#EA8F00FF', '1 min %');
+$def[2] .= rrd::gprint('load1min', array('LAST', 'AVERAGE', 'MAX'), '%6.0lf');
+$def[2] .= rrd::line1('load1min', '#000000');
+
+$opt[3] = "--vertical-label 'Load %' --slope-mode -l0 --title '5 Second CPU Load Percentage for $hostname'";
+$def[3] = rrd::def('load5sec', $RRDFILE[1], $DS[3], 'AVERAGE');
+$def[3] .= rrd::area('load5sec', '#EACC00FF', '5 sec %');
+$def[3] .= rrd::gprint('load5sec', array('LAST', 'AVERAGE', 'MAX'), '%6.0lf');
+$def[3] .= rrd::line1('load5sec', '#000000');
+
+if(!empty($this->MACRO['TIMET'])) {
+	$def[1] .= "VRULE:{$this->MACRO['TIMET']}#000000";
+	$def[2] .= "VRULE:{$this->MACRO['TIMET']}#000000";
+	$def[3] .= "VRULE:{$this->MACRO['TIMET']}#000000";
+}
+?>

@@ -1,0 +1,13 @@
+*.tar.bz2
+*.cfg
+*.m4
+*.php
+*.pl
+*.swp
+aclocal.m4
+autom4te.cache/
+Makefile
+Makefile.in
+config.log
+config.status
+configure
