@@ -36,7 +36,7 @@ else
   $3
 fi])dnl
 
-AC_PROG_PERL_MODULES([Nagios::Plugin LWP::UserAgent],,
+AC_PROG_PERL_MODULES([Nagios::Plugin LWP::UserAgent Net::SNMP],,
   AC_MSG_ERROR([One or more required Perl modules are missing]))
 
 AC_MSG_CHECKING([whether to install PNP4Nagios templates])
