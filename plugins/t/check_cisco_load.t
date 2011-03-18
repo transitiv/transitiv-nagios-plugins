@@ -31,12 +31,12 @@ $result = PluginTester->exec("${plugin} -H ${invalid_domain} -c 60,70,80");
 ok($result->exit_status == 3, 'UNKNOWN returned with missing warning argument');
 like($result->output, qr/Missing argument: warning/, 'Output for missing warning argument');
 
-# test a (hopefulle) unresolvable domain
+# test a (hopefully) unresolvable domain
 $result = PluginTester->exec("${plugin} -H ${invalid_domain} -w 60,70,80 -c 70,80,90");
 ok($result->exit_status == 3, 'UNKNOWN returned for unresolvable address');
-like($result->output, qr{Unable to resolve the UDP/IPv4 address "\Q$invalid_domain"}, 'Output for unresolvable address');
+like($result->output, qr{Unable to resolve (?:the ?)?UDP/IPv4 address ["']\Q$invalid_domain\E['"]}, 'Output for unresolvable address');
 
 # test a (hopefully) non-SNMP host
 $result = PluginTester->exec("${plugin} -H ${unresponsive_ip} -w 60,70,80 -c 70,80,90 -t 5");
 ok($result->exit_status == 3, 'UNKNOWN returned for unresponsive host');
-like($result->output, qr/No response from remote host "\Q${unresponsive_ip}"/, 'Output for unresponsive host');
+like($result->output, qr/No response from remote host ["']\Q$unresponsive_ip\E["']/, 'Output for unresponsive host');
