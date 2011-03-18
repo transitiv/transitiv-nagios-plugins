@@ -1,7 +1,9 @@
 TESTS_ENVIRONMENT = $(PERL) -Mstrict -I $(top_srcdir) -w
 TESTS = t/check_wordpress.t \
 	t/check_cisco_load.t \
-	t/check_cisco_psu.t
+	t/check_cisco_psu.t \
+	t/check_cisco_temperatures.t \
+	t/check_snmp_printer.t
 
 libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_printer.pl \
