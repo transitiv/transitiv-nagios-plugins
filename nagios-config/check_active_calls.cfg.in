@@ -1,0 +1,19 @@
+define command {
+	command_name	check_active_calls
+	command_line	@PLUGINDIR@/check_active_calls.pl -H '$HOSTADDRESS$' -C '$ARG1$'
+}
+
+define command {
+	command_name	check_active_calls_thresholds
+	command_line	@PLUGINDIR@/check_active_calls.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
+
+define command {
+	command_name	check_active_calls_to
+	command_line	@PLUGINDIR@/check_active_calls.pl -H '$HOSTADDRESS$' -C '$ARG1$' -n '$ARG2$'
+}
+
+define command {
+	command_name	check_active_calls_to_thresholds
+	command_line	@PLUGINDIR@/check_active_calls.pl -H '$HOSTADDRESS$' -C '$ARG1$' -n '$ARG2$' -w '$ARG3$' -c '$ARG4$'
+}
