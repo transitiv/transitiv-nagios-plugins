@@ -27,7 +27,8 @@ use constant {
     BLURB       => q{This plugin checks the number of active calls on a
 device supporting the DIAL-CONTROL-MIB.},
     SHORTNAME   => 'check_active_calls',
-    USAGE       => q{Usage: %s -H <host> [-C <community>] [-t <timeout>] [-n <number>]},
+    USAGE       => q{Usage: %s -H <host> [-C <community>] [-t <timeout>] [-n <number>]
+       [-w <threshold>] [-c <threshold>]},
     LICENSE     => q{@COPYRIGHT@
 
 This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
@@ -70,6 +71,18 @@ $np->add_arg(
     label       => 'NUMBER',
 );
 
+$np->add_arg(
+    spec        => 'warning|w=s',
+    help        => 'Number of calls to result in WARNING status',
+    label       => 'THRESHOLD',
+);
+
+$np->add_arg(
+    spec        => 'critical|c=s',
+    help        => 'Number of calls to result in CRITICAL status',
+    label       => 'THRESHOLD',
+);
+
 $np->getopts;
 
 alarm $np->opts->timeout;
@@ -108,6 +121,7 @@ if (! defined($active_call_table)) {
 alarm 0;
 
 my $cnt = 0;
+my ($code, $msg);
 
 if ($np->opts->number) {
     while (my ($key, $value) = each(%$active_call_table)) {
@@ -116,13 +130,16 @@ if ($np->opts->number) {
         }
     }
     $np->add_perfdata(
-        label => sprintf("Active calls to %s", $np->opts->number),
-        value => $cnt
+        label       => sprintf("Active calls to %s", $np->opts->number),
+        value       => $cnt,
+        warning     => ($np->opts->warning || undef),
+        critical    => ($np->opts->critical || undef),
     );
 
-    $np->nagios_exit(OK, sprintf("%i active call%s to %s",
+    $msg = sprintf(
+        "%i active call%s to %s",
         $cnt, ($cnt == 1 ? '' : 's'), $np->opts->number
-    ));
+    );
 } else {
     # divide number of calls by 2 as both the inbound and outbound
     # leg of a call appear in the SNMP table.
@@ -130,11 +147,22 @@ if ($np->opts->number) {
     $cnt = int(scalar(keys(%$active_call_table))/2);
    
     $np->add_perfdata(
-        label => 'Active calls',
-        value => $cnt
+        label =>    'Active calls',
+        value =>    $cnt,
+        warning =>  ($np->opts->warning || undef),
+        critical => ($np->opts->critical || undef)
     );
 
-    $np->nagios_exit(OK, sprintf("%i active call%s",
+    $msg = sprintf(
+        "%i active call%s",
         $cnt, ($cnt == 1 ? '' : 's')
-    ));
+    );
 }
+
+$code = $np->check_threshold(
+    check       => $cnt,
+    warning     => ($np->opts->warning || undef),
+    critical    => ($np->opts->critical || undef)
+);
+
+$np->nagios_exit($code, $msg);
