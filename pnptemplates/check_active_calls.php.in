@@ -1,0 +1,15 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_active_calls.pl
+# Distributed with @PACKAGE_STRING@
+#
+$opt[1] = "--vertical-label 'Active Calls' -l0 --slope-mode --title '$hostname / {$this->MACRO['DISP_SERVICEDESC']}' ";
+$def[1] = rrd::def("current", $RRDFILE[1], $DS[1], "AVERAGE");
+$def[1] .= rrd::area("current", "#3F0", $this->DS[0]['LABEL']) ;
+$def[1] .= rrd::line1("current", "#4F8A10");
+$def[1] .= rrd::gprint("current", array("LAST", "AVERAGE", "MAX"), "%6.0lf");
+if(!empty($this->MACRO['TIMET'])) {
+	$def[1] .= "VRULE:{$this->MACRO['TIMET']}#000000";
+}
+?>
