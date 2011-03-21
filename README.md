@@ -22,7 +22,7 @@ documentation for further info).
   supporting the CISCO-ENVMON-MIB.
 * `check_cisco_load.pl` Checks the CPU load average against user defined
   thresholds on Cisco devices supporting the CISCO-PROCESS-MIB or
-  CISCO-PROCESS-MIB.
+  the OLD-CISCO-CPU-MIB.
 * `check_cisco_psu.pl` Checks the status of power supply units on Cisco
   devices supporting the CISCO-ENVMON-MIB.
 * `check_cisco_temperatures.pl` Checks the status of temperature sensors
