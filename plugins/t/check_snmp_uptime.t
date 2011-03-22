@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w -I ..
 
 use strict;
-use Test::More tests => 13;
+use Test::More tests => 17;
 use PluginTester;
 use IO::Socket;
 
@@ -31,13 +31,22 @@ $result = PluginTester->exec("${plugin} -H ${invalid_domain} -c 5m");
 ok($result->exit_status == 3, 'UNKNOWN returned with missing warning argument');
 like($result->output, qr/Missing argument: warning/, 'Output for missing warning argument');
 
-# test a (hopefulle) unresolvable domain
+# test invalid warning argument format
+$result = PluginTester->exec("${plugin} -H ${invalid_domain} -w 20minutes -c 30m");
+ok($result->exit_status == 3, 'UNKNOWN return with invalid warning argument format');
+like($result->output, qr/Invalid format for warning argument/, 'Output for invalid warning argument');
+
+# test invalid warning argument format
+$result = PluginTester->exec("${plugin} -H ${invalid_domain} -w 20m -c 30hours");
+ok($result->exit_status == 3, 'UNKNOWN return with invalid critical argument format');
+like($result->output, qr/Invalid format for critical argument/, 'Output for invalid critical argument');
+
+# test a (hopefully) unresolvable domain
 $result = PluginTester->exec("${plugin} -H ${invalid_domain} -w 30m -c 5m");
 ok($result->exit_status == 3, 'UNKNOWN returned for unresolvable address');
-like($result->output, qr{Unable to resolve UDP/IPv4 address '\Q$invalid_domain'}, 'Output for unresolvable address');
+like($result->output, qr{Unable to resolve (?:the ?)?UDP/IPv4 address ["']\Q$invalid_domain\E['"]}, 'Output for unresolvable address');
 
 # test a (hopefully) non-SNMP host
 $result = PluginTester->exec("${plugin} -H ${unresponsive_ip} -w 30m -c 5m -t 5");
 ok($result->exit_status == 3, 'UNKNOWN returned for unresponsive host');
-like($result->output, qr/No response from remote host '\Q${unresponsive_ip}'/, 'Output for unresponsive host');
-
+like($result->output, qr/No response from remote host ["']\Q$unresponsive_ip\E["']/, 'Output for unresponsive host');
