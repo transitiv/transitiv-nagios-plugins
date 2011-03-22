@@ -1,4 +1,11 @@
+# Check uptime using SNMP v1
 define command {
 	command_name	check_snmp_uptime
 	command_line	@PLUGINDIR@/check_snmp_uptime.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
+
+# Check uptime using SNMP v2c
+define command {
+	command_name	check_snmp_uptime2
+	command_line	@PLUGINDIR@/check_snmp_uptime.pl -H '$HOSTADDRESS$' -C '$ARG1$' -2 -w '$ARG2$' -c '$ARG3$'
 }
