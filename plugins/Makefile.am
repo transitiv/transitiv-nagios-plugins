@@ -4,7 +4,8 @@ TESTS = t/check_wordpress.t \
 	t/check_cisco_psu.t \
 	t/check_cisco_temperatures.t \
 	t/check_snmp_uptime.t \
-	t/check_snmp_printer.t
+	t/check_snmp_printer.t \
+	t/check_cisco_pix_failover.t
 
 libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_printer.pl \
@@ -13,7 +14,8 @@ libexec_SCRIPTS = check_wordpress.pl \
 	check_cisco_fans.pl \
 	check_cisco_psu.pl \
 	check_snmp_uptime.pl \
-	check_active_calls.pl
+	check_active_calls.pl \
+	check_cisco_pix_failover.pl
 
 CLEANFILES = $(libexec_SCRIPTS)
 EXTRA_DIST = $(TESTS) \
@@ -24,7 +26,8 @@ EXTRA_DIST = $(TESTS) \
 	check_cisco_fans.pl.in \
 	check_cisco_psu.pl.in \
 	check_snmp_uptime.pl.in \
-	check_active_calls.pl.in
+	check_active_calls.pl.in \
+	check_cisco_pix_failover.pl.in
 
 do_subst = sed -e 's,[@]VERSION[@],$(PACKAGE_VERSION),g' \
 	-e 's,[@]BUGREPORT[@],$(PACKAGE_BUGREPORT),g' \
