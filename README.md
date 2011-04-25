@@ -32,6 +32,10 @@ documentation for further info).
   printers with SNMP functionality).
 * `check_active_calls.pl` Checks the number of active calls on devices
   supporting the DIAL-CONTROL-MIB.
+* `check_snmp_uptime.pl` Checks the uptime of a device via SNMP (useful
+  if a device has a habit of rebooting before Nagios can notice).
+* `check_cisco_pix_failover.pl` Checks the status of a failover
+  configuration on a Cisco PIX firewall.
 
 ### Other
 
