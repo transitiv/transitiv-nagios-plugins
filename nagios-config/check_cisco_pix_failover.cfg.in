@@ -2,3 +2,8 @@ define command {
 	command_name	check_cisco_pix_failover
 	command_line	@PLUGINDIR@/check_cisco_pix_failover.pl -H '$HOSTADDRESS$' -C '$ARG1$'
 }
+
+define command {
+	command_name	check_cisco_pix_failover_v1
+	command_line	@PLUGINDIR@/check_cisco_pix_failover.pl -1 -H '$HOSTADDRESS$' -C '$ARG1$'
+}
