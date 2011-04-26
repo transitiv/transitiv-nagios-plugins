@@ -183,6 +183,7 @@ my $code;
 # Firewall  Firewall
 # =================================
 # active    standby     OK
+# standby   active      OK
 # active    !standby    WARNING
 # !active   active      WARNING
 # !active   !active     CRITICAL
@@ -193,6 +194,9 @@ if ($status_primary == STATUS_VALUE_ACTIVE) {
     } else {
         $code = WARNING;
     }
+} elsif ($status_secondary == STATUS_VALUE_ACTIVE &&
+         $status_primary == STATUS_VALUE_STANDBY) {
+         $code = OK;
 } else {
     if ($status_secondary == STATUS_VALUE_ACTIVE) {
         $code = WARNING;
@@ -203,8 +207,8 @@ if ($status_primary == STATUS_VALUE_ACTIVE) {
 
 $np->nagios_exit($code, sprintf(
         "%s: %s / %s: %s",
-        $info_primary,
+        $info_primary || "Primary device",
         STATUS_VALUE_STRINGS->[$status_primary],
-        $info_secondary,
+        $info_secondary || "Secondary device",
         STATUS_VALUE_STRINGS->[$status_secondary]
 ));
