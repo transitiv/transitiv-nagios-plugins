@@ -1,0 +1,5 @@
+define command{
+	command_name	check_cpu_temp_lm_sensors
+	command_line	@PLUGINDIR@/check_snmp_lm_sensors_temp.pl -H $HOSTADDRESS$ -n $ARG1$ -C $ARG2$ -w $ARG3$ -c $ARG4$
+	}
+
