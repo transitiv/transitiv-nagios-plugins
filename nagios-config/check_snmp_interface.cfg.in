@@ -1,0 +1,25 @@
+# Check for interface status over SNMP
+# 'check_snmp_interface' command definition
+define command {
+	command_name check_snmp_interface
+	command_line @PLUGINDIR@/check_snmp_interface.pl -H $HOSTADDRESS$ -C $ARG1$ -n $ARG2$
+}
+
+# 'check_snmp_interface_2' command definition
+define command {
+	command_name check_snmp_interface_2
+	command_line @PLUGINDIR@/check_snmp_interface.pl -H $HOSTADDRESS$ -C $ARG1$ -2 -n $ARG2$
+}
+
+# 'check_snmp_interface_down' command definition
+define command {
+	command_name check_snmp_interface_down
+	command_line @PLUGINDIR@/check_snmp_interface.pl -H $HOSTADDRESS$ -C $ARG1$ -i -n $ARG2$
+}
+
+# 'check_snmp_interface_down_2' command definition
+define command {
+	command_name check_snmp_interface_down_2
+	command_line @PLUGINDIR@/check_snmp_interface.pl -H $HOSTADDRESS$ -C $ARG1$ -2 -i -n $ARG2$
+}
+
