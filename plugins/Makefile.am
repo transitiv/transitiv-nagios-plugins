@@ -7,7 +7,7 @@ TESTS = t/check_wordpress.t \
 	t/check_snmp_printer.t \
 	t/check_snmp_interface.t \
 	t/check_snmp_lm_sensors_temp.t \
-	t/check_snmp_simple_mem.t \
+	t/check_snmp_mem_simple.t \
 	t/check_cisco_pix_failover.t
 
 libexec_SCRIPTS = check_wordpress.pl \
@@ -20,7 +20,7 @@ libexec_SCRIPTS = check_wordpress.pl \
 	check_active_calls.pl \
 	check_snmp_interface.pl \
 	check_snmp_lm_sensors_temp.pl \
-	check_snmp_simple_mem.pl \
+	check_snmp_mem_simple.pl \
 	check_cisco_pix_failover.pl
 
 CLEANFILES = $(libexec_SCRIPTS)
@@ -35,7 +35,7 @@ EXTRA_DIST = $(TESTS) \
 	check_active_calls.pl.in \
 	check_snmp_interface.pl.in \
 	check_snmp_lm_sensors_temp.pl.in \
-	check_snmp_simple_mem.pl.in \
+	check_snmp_mem_simple.pl.in \
 	check_cisco_pix_failover.pl.in
 
 do_subst = sed -e 's,[@]VERSION[@],$(PACKAGE_VERSION),g' \
