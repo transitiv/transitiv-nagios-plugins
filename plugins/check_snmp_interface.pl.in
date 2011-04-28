@@ -18,19 +18,14 @@
 #
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
-# Walk interface index
-# Associate interface with index no
-# get interface status by index
-# output up or down
-# get inoctets, outoctets and linespeed perfdata
-
 use strict;
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
 use constant {
     VERSION     => '@VERSION@',
-    BLURB       => q{This plugin checks interface status on devices supporting the IF-MIB and returns bandwidth usage performance data.},
+    BLURB       => q{This plugin checks the status of an interface on devices supporting
+the IF-MIB.},
     SHORTNAME   => 'check_snmp_interface',
     USAGE       => q{Usage: %s -H <host> -n <interface name> [-i] [-2] [-C <community>]},
     LICENSE     => q{@COPYRIGHT@
@@ -50,31 +45,45 @@ my $np = Nagios::Plugin->new(
     timeout     => TIMEOUT,
 );
 
-# Define the OIDs we are interested in
-# Interface descriptions
-my $desc_table_oid = '.1.3.6.1.2.1.2.2.1.2';
-# interface operational state
-my $state_table_oid = '1.3.6.1.2.1.2.2.1.8';
-# Represents the state of a interface being monitored.$np->nagios_die($error);
-# Valid values are:
-#
-# up(1):             the interface is up
-#
-# down(2):           the interface is down
-#
-# line speed in bits
-my $int_speed_table_oid = '1.3.6.1.2.1.2.2.1.5';
-# inbound bytes
-my $in_octets_table_oid = '1.3.6.1.2.1.2.2.1.10';
-# outbound bytes
-my $out_octets_table_oid = '1.3.6.1.2.1.2.2.1.16';
-
 use constant {
-    INTERFACE_UP          => 1,
-    INTERFACE_DOWN        => 2,
+    # IF-MIB::ifDescr
+    OID_DESC_TABLE          => '1.3.6.1.2.1.2.2.1.2',
+    # IF-MIB::ifOperStatus
+    OID_STATE_TABLE         => '1.3.6.1.2.1.2.2.1.8',
+    # IF-MIB::ifSpeed
+    OID_SPEED_TABLE         => '1.3.6.1.2.1.2.2.1.5',
+    # IF-MIB::ifInOctets
+    OID_IN_OCTETS_TABLE     => '1.3.6.1.2.1.2.2.1.10',
+    # IF-MIB::ifOutOctets
+    OID_OUT_OCTETS_TABLE    => '1.3.6.1.2.1.2.2.1.16',
+
+    # ifOperStatus enumeration values
+    # ready to pass packets
+    STATUS_VALUE_UP                 => 1,
+    # link down
+    STATUS_VALUE_DOWN               => 2,
+    # in some test mode
+    STATUS_VALUE_TESTING            => 3,
+    # status cannot be determined
+    STATUS_VALUE_UNKNOWN            => 4,
+    STATUS_VALUE_DORMANT            => 5,
+    # some component is missing
+    STATUS_VALUE_NOT_PRESENT        => 6,
+    # down due to state of lower-layer interface(s)
+    STATUS_VALUE_LOWER_LAYER_DOWN   => 7,
+
+    # Mapping of ifOperStatus values to strings
+    STATUS_VALUE_STRINGS => [
+        undef,
+        'up',
+        'down',
+        'unknown',
+        'dormant',
+        'not present',
+        'down'
+    ]
 };
 
-# Define our arguments
 $np->add_arg(
     spec        => 'host|H=s',
     help        => q{IP address or hostname (use an IP address if possible to prevent a
@@ -91,13 +100,13 @@ $np->add_arg(
 
 $np->add_arg(
     spec        => 'name|n=s',
-    help        => 'Interface name (eth0, ppp0, wlan0 etc)',
+    help        => 'Interface name to check (i.e. FastEthernet0, ATM0, eth0)',
     required    => 1,
 );
 
 $np->add_arg(
     spec        => 'inverse|i',
-    help        => 'The default logic alerts if an interface is down, this option inverts that to alert if an interface is up',
+    help        => 'Exit with CRITICAL status if the interface is up',
 );
 
 $np->add_arg(
@@ -106,6 +115,7 @@ $np->add_arg(
 );
 
 $np->getopts;
+
 alarm $np->opts->timeout;
 
 my ($session, $error) = Net::SNMP->session(
@@ -124,7 +134,7 @@ if (! defined($session)) {
 
 # Walk the interface description table
 my $desc_table = $session->get_table(
-    -baseoid    => $desc_table_oid,
+    -baseoid    => OID_DESC_TABLE,
 );
 
 # Bail if we couldn't walk the table
@@ -138,7 +148,8 @@ if (! defined($desc_table)) {
 # Index number of the given interface in the table
 my $int_index;
 
-# Look for our interface in the table and get its index number
+# Look for the specified interface in the table
+# If found, extract its index number
 while (my ($key, $val) = each %$desc_table) {
     if ($val eq $np->opts->name) {
         $int_index = substr $key, -1;
@@ -148,18 +159,24 @@ while (my ($key, $val) = each %$desc_table) {
 
 # Check we actually got an interface
 if (!defined($int_index)) {
-    $np->nagios_die("No interface found matching " . $np->opts->name);
+    $np->nagios_die(sprintf(
+        "No interface found named `%s'",
+        $np->opts->name
+    ));
 }
 
-## Get the status, linespeed, inoctets and outoctets for the interface and stuff them in an array
-my $int_state_oid = $state_table_oid . '.' . $int_index;
-my $int_speed_oid = $int_speed_table_oid . '.' . $int_index;
-my $in_octets_oid = $in_octets_table_oid . '.' . $int_index;
-my $out_octets_oid = $out_octets_table_oid . '.' . $int_index;
+# Build the OIDs using the interface index found above 
+my $int_state_oid = OID_STATE_TABLE . '.' . $int_index;
+my $int_speed_oid = OID_SPEED_TABLE . '.' . $int_index;
+my $in_octets_oid = OID_IN_OCTETS_TABLE . '.' . $int_index;
+my $out_octets_oid = OID_OUT_OCTETS_TABLE . '.' . $int_index;
 
-# Build an SNMP query which calls the OIDs constructed above
-
-my @oids = ($int_state_oid,$int_speed_oid,$in_octets_oid,$out_octets_oid);
+my @oids = (
+    $int_state_oid,
+    $int_speed_oid,
+    $in_octets_oid,
+    $out_octets_oid,
+);
 
 my $result = $session->get_request(
     -varbindlist    => \@oids,
@@ -176,43 +193,41 @@ if (!defined($result)) {
 alarm 0;
 
 # index the hash by the OID
-my $int_state = $$result{$int_state_oid};
-my $int_speed = $$result{$int_speed_oid}/8;
-my $in_octets = $$result{$in_octets_oid};
-my $out_octets = $$result{$out_octets_oid};
+my $int_state = $$result{$int_state_oid} || STATUS_VALUE_UNKNOWN;
+my $int_speed = ($$result{$int_speed_oid} || 0);
+my $in_octets = $$result{$in_octets_oid} || 0;
+my $out_octets = $$result{$out_octets_oid} || 0;
 
-# Output the check result and status according to whether inverse was specified
-if ($int_state == INTERFACE_UP) {
-    if (!defined($np->opts->inverse)) {
-        $np->add_message(OK,$np->opts->name . " is up");
-    } else {
-        $np->add_message(CRITICAL,$np->opts->name . " is up");
-    }
+my ($code, $message);
+
+if ($int_state == STATUS_VALUE_UP) {
+    $code = (defined($np->opts->inverse) ? CRITICAL : OK);
+} elsif ($int_state == STATUS_VALUE_UNKNOWN) {
+    $code = UNKNOWN;
 } else {
-    if (!defined($np->opts->inverse)) {
-        $np->add_message(CRITICAL,$np->opts->name . " is down");
-    } else {
-        $np->add_message(OK,$np->opts->name . " is up");
-    }
+    $code = (defined($np->opts->inverse) ? OK : CRITICAL);
 }
 
 $np->add_perfdata(
-    label       => 'Link Speed',
+    label       => 'speed',
     value       => $int_speed,
+    uom         => 'bps',
 );
 $np->add_perfdata(
-    label       => 'Data In',
+    label       => 'in_octets',
     value       => $in_octets,
     uom         => 'c',
+    min         => 0,
+    max         => (2**32)-1,
 );
 $np->add_perfdata(
-    label       => 'Data Out',
+    label       => 'out_octets',
     value       => $out_octets,
     uom         => 'c',
+    min         => 0,
+    max         => (2**32)-1,
 );
 
-my ($code, $message) = $np->check_messages(
-    join    => ', '
-);
-
-$np->nagios_exit($code, $message);
+$np->nagios_exit($code, sprintf(
+    "%s is %s", $np->opts->name, STATUS_VALUE_STRINGS->[$int_state]
+));
