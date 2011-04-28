@@ -1,0 +1,168 @@
+#!/usr/bin/perl -w
+# vim: et sts=4 sw=4 ts=4
+# nagios: +epn
+#
+# @COPYRIGHT@
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+# Please send comments, bugs and feature requests to @BUGREPORT@
+
+use strict;
+use Net::SNMP qw(:snmp);
+use Nagios::Plugin;
+
+
+
+use constant {
+    VERSION     => '@VERSION@',
+    BLURB       => q{Checks device memory usage for simple network appliances which support HOST-RESOURCES-MIB via SNMP.},
+    SHORTNAME   => 'SNMP Memory Usage',
+    USAGE       => q{Usage: %s [-H <host>] [-C <snmp_community>] -t <timeout>
+    [ -c|--critical=<threshold> ] [ -w|--warning=<threshold> ]},
+    TIMEOUT     => 10,
+    LICENSE     => q{@COPYRIGHT@
+
+This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
+It may be used, redistributed and/or modified under the terms of the
+ISC Licence (see http://opensource.org/licenses/isc-license.txt).},
+};
+
+sub plugin_die {
+    my ($np, $msg) = @_;
+    print $np->opts->_usage . "\n";
+    print $msg . "\n";
+    exit(UNKNOWN);
+}
+
+my $np = Nagios::Plugin->new(
+    usage       => USAGE,
+    shortname   => SHORTNAME,
+    version     => VERSION,
+    blurb       => BLURB,
+    timeout     => TIMEOUT,
+    license     => LICENSE,
+);
+
+# Define the OIDs we are interested in
+# Available memory in bytes
+my $oid_mem_avail = ".1.3.6.1.2.1.25.2.3.1.5.1";
+# Used memory in bytes
+my $oid_mem_used = ".1.3.6.1.2.1.25.2.3.1.6.1";
+
+# Specify out arguments
+$np->add_arg(
+    spec        => 'host|H=s',
+    help        => q{IP address or hostname (use an IP address if possible to prevent a
+   DNS query)},
+    required    => 1,
+    label       => 'HOSTNAME',
+);
+
+$np->add_arg(
+    spec        => 'community|C=s',
+    help        => 'SNMP community string',
+    required    => 1,
+    label       => 'COMMUNITY STRING',
+    default     => 'public',
+);
+
+$np->add_arg(
+    spec        => '2',
+    help        => 'Use SNMP protocol version 2',
+);
+
+$np->add_arg(
+    spec        => 'warning|w=i',
+    help        => 'Warning level for memory usage. An integer value up to 100',
+    required    => 1,
+    label       => 'PERCENTAGE'
+);
+
+$np->add_arg(
+    spec        => 'critical|c=i',
+    help        => 'Critical level for memory usage. An integer value up to 100',
+    required    => 1,
+    label       => 'PERCENTAGE'
+);
+
+$np->getopts;
+
+my $warning = $np->opts->warning;
+my $critical = $np->opts->critical;
+
+# Check the warn/crit values are sensible and bail out if not
+if (($warning < 0) || ($warning > 100)) {
+    plugin_die($np, 'Warning argument must be an integer value between 0 and 100, try --help');
+}
+
+if (($critical < 0) || ($critical > 100)) {
+    plugin_die($np, 'Critical argument must be an integer value between 0 and 100, try --help');
+}
+
+my ($session, $error) = Net::SNMP->session(
+    -hostname   => $np->opts->host,
+    -version    => $np->opts->{'2'} ? '2' : '1',
+    -community  => $np->opts->community,
+    -timeout    => $np->opts->timeout/4,
+    -retries    => 1,
+    -port       => 161,
+);
+
+if (! defined($session)) {
+    alarm 0;
+    $np->nagios_die($error);
+}
+
+my @oids = ($oid_mem_avail, $oid_mem_used);  
+
+my $result = $session->get_request(
+    -varbindlist    => \@oids,
+);
+
+if (!defined($result)) {
+    alarm 0;
+    $error = $session->error;
+    $session->close();
+    $np->nagios_die($error);
+}
+
+# Get the memory available/used values
+my $mem_avail = $$result{$oid_mem_avail};
+my $mem_used = $$result{$oid_mem_used};
+
+# Turn the memory usage into a pecentage of the available memory
+my $mem_usage = sprintf("%.1f", ($mem_used/$mem_avail)*100);
+
+my $code = $np->check_threshold(
+    check       => $mem_usage,
+    warning     => $np->opts->warning,
+    critical    => $np->opts->critical,
+);
+
+# Work out the warn and crit values as a percentage of available memory
+my ($warn_bytes, $crit_bytes);
+$warn_bytes = sprintf("%.0f", ($mem_avail/100)*$warning);
+$crit_bytes = sprintf("%.0f", ($mem_avail/100)*$critical);
+
+$np->add_perfdata(
+    label       => 'Bytes in Use',
+    value       => $mem_used,
+    warning     => $warn_bytes,
+    critical    => $crit_bytes,
+    min         => 0,
+    max         => $mem_avail,
+);
+
+$np->nagios_exit($code, 'Memory usage is: ' . $mem_usage . '%');
+

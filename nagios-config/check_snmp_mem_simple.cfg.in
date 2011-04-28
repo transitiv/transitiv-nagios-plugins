@@ -1,0 +1,14 @@
+# system memory check for simple network devices
+
+# 'check_snmp_mem_simple' command definition
+define command {
+        command_name check_snmp_mem_simple
+        command_line @PLUGINDIR@/check_snmp_mem_simple.pl -H $HOSTADDRESS$ -C $ARG1$ -w $ARG2$ -c $ARG3$
+}
+
+# 'check_snmp_mem_simple_v2' command definition
+define command {
+        command_name check_snmp_mem_simple_v2
+        command_line @PLUGINDIR@/check_snmp_mem_simple.pl -H $HOSTADDRESS$ -C $ARG1$ -2 -w $ARG2$ -c $ARG3$
+}
+
