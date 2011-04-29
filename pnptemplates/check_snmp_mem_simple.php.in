@@ -1,0 +1,33 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_active_calls.pl
+# Distributed with @PACKAGE_STRING@
+#
+$opt[1] = "--vertical-label 'Bytes' --slope-mode --base 1024 -l0 --rigid --title 'Memory Usage for $hostname'";
+
+if (!empty($MAX[1])) {
+	$opt[1] .= " -u" . $MAX[1];
+}
+
+$def[1] = rrd::def('memusage', $RRDFILE[1], $DS[1], 'AVERAGE');
+$def[1] .= rrd::area('memusage', '#3F0', 'Used');
+$def[1] .= rrd::gprint('memusage', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
+$def[1] .= rrd::line1('memusage', '#4F8A10');
+
+if (!empty($MAX[1])) {
+	$def[1] .= rrd::hrule($MAX[1], '#000000', 'Total\n');
+}
+
+if (!empty($WARN[1])) {
+	$def[1] .= rrd::hrule($WARN[1], '#FFFF00', 'Warning\n');
+}
+
+if (!empty($CRIT[1])) {
+	$def[1] .= rrd::hrule($CRIT[1], '#FF0000', 'Critical\n');
+}
+
+if (!empty($this->MACRO['TIMET'])) {
+	$def[1] .= "VRULE:{$this->MACRO['TIMET']}#AAAAAA\n";
+}
+?>
