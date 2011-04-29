@@ -1,7 +1,7 @@
 <?php
 #
 # @COPYRIGHT@
-# PNP4Nagios graph template for check_active_calls.pl
+# PNP4Nagios graph template for check_snmp_mem_simple.pl
 # Distributed with @PACKAGE_STRING@
 #
 $opt[1] = "--vertical-label 'Bytes' --slope-mode --base 1024 -l0 --rigid --title 'Memory Usage for $hostname'";

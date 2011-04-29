@@ -1,0 +1,30 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_snmp_interface.pl
+# Distributed with @PACKAGE_STRING@
+#
+$opt[1] = "--vertical-label 'Bytes per second' --slope-mode --base 1024 -l0 -r --title '{$this->MACRO['DISP_SERVICEDESC']} / $hostname'";
+
+$def[1] = rrd::def('in', $RRDFILE[1], $DS[1], 'AVERAGE');
+$def[1] .= rrd::def('out', $RRDFILE[1], $DS[2], 'AVERAGE');
+
+$def[1] .= rrd::area('in', '#3F0', 'Incoming');
+$def[1] .= rrd::gprint('in', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%sBps');
+$def[1] .= rrd::line1('in', '#4F8A10');
+
+$def[1] .= rrd::line1('out', '#0000EE', 'Outgoing');
+$def[1] .= rrd::gprint('out', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%sBps');
+
+$def[1] .= rrd::comment('\s');
+$def[1] .= " VDEF:intotal=in,TOTAL";
+$def[1] .= " GPRINT:intotal:'Total In\: %6.1lf%sBytes'";
+
+$def[1] .= " VDEF:outtotal=out,TOTAL";
+$def[1] .= " GPRINT:outtotal:'Total Out\: %6.1lf%sBytes'";   
+
+if (!empty($this->MACRO['TIMET'])) {
+	$def[1] .= " VRULE:{$this->MACRO['TIMET']}#AAAAAA";
+}
+?>
+
