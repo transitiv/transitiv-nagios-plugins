@@ -168,7 +168,8 @@ my $int_index;
 # If found, extract its index number
 while (my ($key, $val) = each %$desc_table) {
     if ($val eq $np->opts->name) {
-        $int_index = substr $key, -1;
+        my @oids = split /\./, $key;
+        $int_index = $oids[-1];
         last;
     }
 }
