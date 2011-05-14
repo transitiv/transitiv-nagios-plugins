@@ -26,7 +26,7 @@ use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the status of an interface on devices supporting
 the IF-MIB.},
-    SHORTNAME   => 'check_snmp_interface',
+    SHORTNAME   => 'Interface',
     USAGE       => q{Usage: %s -H <host> -n <interface name> [-2] [-C <community>] [-i] [--64bit]},
     LICENSE     => q{@COPYRIGHT@
 
