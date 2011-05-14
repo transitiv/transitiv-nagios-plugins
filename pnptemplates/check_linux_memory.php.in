@@ -1,0 +1,39 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_linux_memory.pl
+# Distributed with @PACKAGE_STRING@
+#
+$opt[1] = "--vertical-label 'Bytes' --slope-mode --base 1024 -l0 --rigid --title 'Memory Usage for $hostname'";
+
+if (!empty($MAX[3])) {
+	$opt[1] .= " -u" . $MAX[3];
+}
+
+$def[1] = rrd::def('buffers', $RRDFILE[1], $DS[1], 'AVERAGE');
+$def[1] .= rrd::def('cached', $RRDFILE[1], $DS[2], 'AVERAGE');
+$def[1] .= rrd::def('allocated', $RRDFILE[1], $DS[3], 'AVERAGE');
+
+$def[1] .= rrd::area('allocated', '#EA644A', rrd::cut('Allocated'));
+$def[1] .= rrd::gprint('allocated', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
+$def[1] .= rrd::area('cached', '#EC9D48', rrd::cut('Cached'), TRUE);
+$def[1] .= rrd::gprint('cached', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
+$def[1] .= rrd::area('buffers', '#ECD748', rrd::cut('Buffers'), TRUE);
+$def[1] .= rrd::gprint('buffers', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
+
+if (!empty($WARN[3])) {
+	$def[1] .= rrd::hrule($WARN[3], '#FFFF00', 'Warning\n');
+}
+
+if (!empty($CRIT[3])) {
+	$def[1] .= rrd::hrule($CRIT[3], '#FF0000', 'Critical\n');
+}
+
+if (!empty($MAX[3])) {
+	$def[1] .= rrd::hrule($MAX[3], '#000000', 'Total\n');
+}
+
+if (!empty($this->MACRO['TIMET'])) {
+	$def[1] .= "VRULE:{$this->MACRO['TIMET']}#AAAAAA\n";
+}
+?>
