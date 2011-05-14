@@ -1,0 +1,4 @@
+define command {
+	command_name	check_linux_memory
+	command_line	@PLUGINDIR@/check_linux_memory.pl -w '$ARG1$' -c '$ARG2$'
+}
