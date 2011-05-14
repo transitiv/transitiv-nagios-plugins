@@ -1,0 +1,150 @@
+#!@PERL@ -w
+# vim: et sts=4 sw=4 ts=4
+# nagios: +epn
+#
+# @COPYRIGHT@
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+# Please send comments, bugs and feature requests to @BUGREPORT@
+
+use strict;
+use Nagios::Plugin;
+
+sub usage_to_string($$) {
+    my ($used, $total) = @_;
+
+    if ($total >= 1024**3) {
+        return sprintf(
+            "%.1f/%.1fGiB",
+            ($used / 1024**3),
+            ($total / 1024**3)
+        );
+    } elsif ($total >= 1024**2) {
+        return sprintf(
+            "%.1f/%.1fMiB",
+            ($used / 1024**2),
+            ($total / 1024**2)
+        );
+    } elsif ($total >= 1024) {
+        return sprintf(
+            "%.1f/%.1fKiB",
+            ($used / 1024),
+            ($total / 1024)
+        );
+    } else {
+        return sprintf(
+            "%.1f/%.1fB",
+            $used, $total
+        );
+    }
+}
+
+use constant {
+    VERSION     => '@VERSION@',
+    BLURB       => q{This plugin checks physical memory usage on a Linux system},
+    SHORTNAME   => 'Memory Usage',
+    USAGE       => q{Usage: %s -w <percentage> -c <percentage> [-t <timeout>]},
+    LICENSE     => q{@COPYRIGHT@
+
+This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
+It may be used, redistributed and/or modified under the terms of the
+ISC Licence (see http://opensource.org/licenses/isc-license.txt).},
+    TIMEOUT     => 10,
+    MEMINFO     => '/proc/meminfo',
+};
+
+my $np = Nagios::Plugin->new(
+    version     => VERSION,
+    blurb       => BLURB,
+    shortname   => SHORTNAME,
+    usage       => USAGE,
+    license     => LICENSE,
+    timeout     => TIMEOUT,
+);
+
+$np->add_arg(
+    spec        => 'warning|w=i',
+    help        => 'Exit with WARNING status if physical memory usage exceeds PERCENT%',
+    label       => 'PERCENT',
+    required    => 1,
+);
+
+$np->add_arg(
+    spec        => 'critical|c=i',
+    help        => 'Exit with CRITICAL status if physical memory usage exceeds PERCENT%',
+    label       => 'PERCENT',
+    required    => 1,
+);
+
+$np->getopts;
+
+my $fh;
+my %values = ();
+
+unless (open($fh, '<', MEMINFO)) { 
+    $np->nagios_die(sprintf("Error opening `%s': %s", MEMINFO, $!));
+}
+
+while (<$fh>) {
+    next unless /^(\w+):\s*(\d+)\s+kb/i;
+    $values{lc($1)} = $2 * 1024;
+}
+
+my $total = $values{'memtotal'};
+my $free = $values{'memfree'};
+# These values may not be present on virtualised systems
+my $buffers = $values{'buffers'} || 0;
+my $cached = $values{'cached'} || 0;
+# Linux uses free memory for buffers and cache. The size of the cache
+# is reduced when an application requests memory, hence we do not count
+# it as "allocated".
+my $used = $total - $free - $buffers - $cached;
+my $used_pc = ($used / $total) * 100;
+my $warning = $total * ($np->opts->warning / 100);
+my $critical = $total * ($np->opts->critical / 100);
+
+$np->add_perfdata(
+    label       => 'buffers',
+    value       => $buffers,
+    min         => 0,
+    max         => $total
+);
+
+$np->add_perfdata(
+    label       => 'cached',
+    value       => $cached,
+    min         => 0,
+    max         => $total
+);
+
+$np->add_perfdata(
+    label       => 'allocated',
+    value       => $used,
+    warning     => $warning,
+    critical    => $critical,
+    min         => 0,
+    max         => $total
+);
+
+my $code = $np->check_threshold(
+    check       => $used,
+    warning     => $warning,
+    critical    => $critical
+);
+
+$np->nagios_exit($code, sprintf(
+    "%.1f%% (%s)",
+    $used_pc,
+    usage_to_string($used, $total)
+));
