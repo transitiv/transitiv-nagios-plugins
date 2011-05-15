@@ -9,7 +9,8 @@ TESTS = t/check_wordpress.t \
 	t/check_snmp_interface.t \
 	t/check_snmp_lm_sensors_temp.t \
 	t/check_snmp_mem_simple.t \
-	t/check_cisco_pix_failover.t
+	t/check_cisco_pix_failover.t \
+	t/check_apcupsd_ups.t
 
 libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_printer.pl \
