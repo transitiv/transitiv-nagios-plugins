@@ -1,0 +1,289 @@
+#!@PERL@ -w
+# vim: et sts=4 sw=4 ts=4
+# nagios: +epn
+#
+# @COPYRIGHT@
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+# Please send comments, bugs and feature requests to @BUGREPORT@
+
+use strict;
+use Nagios::Plugin;
+
+sub plugin_die {
+    my ($np, $msg) = @_;
+    print $np->opts->_usage . "\n";
+    print $msg . "\n";
+    exit(UNKNOWN);
+}
+
+use constant {
+    VERSION     => '@VERSION@',
+    BLURB       => q{This plugin checks the status of a UPS using apcupsd},
+    SHORTNAME   => 'UPS',
+    USAGE       => q{Usage: %s -w <percentage> -c <percentage> [-t <timeout>]},
+    LICENSE     => q{@COPYRIGHT@
+
+This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
+It may be used, redistributed and/or modified under the terms of the
+ISC Licence (see http://opensource.org/licenses/isc-license.txt).},
+    TIMEOUT     => 10,
+    APCACCESS   => '/sbin/apcaccess',
+};
+
+use constant {
+    # UPS status values taken from apcstatus.c
+    STATUS_CALIBRATION      => 'CAL',
+    STATUS_TRIM             => 'TRIM',
+    STATUS_BOOST            => 'BOOST',
+    STATUS_ONLINE           => 'ONLINE',
+    STATUS_ONBATTERY        => 'ONBATT',
+    STATUS_OVERLOADED       => 'OVERLOAD',
+    STATUS_LOWBATTERY       => 'LOWBATT',
+    STATUS_REPLACEBATTERY   => 'REPLACEBATT',
+    STATUS_NOBATTERY        => 'NOBATT',
+    STATUS_COMMLOST         => 'COMMLOST',
+    STATUS_SHUTDOWN         => 'SHUTTING DOWN',
+
+    # Value formats
+    FORMAT_LINEV            => qr/^([.\d]+) Volts$/,
+    FORMAT_BCHARGE          => qr/^([.\d]+) Percent$/,
+    FORMAT_LOADPCT          => qr/^([.\d]+) Percent Load Capacity$/,
+    FORMAT_TIMELEFT         => qr/^([.\d]+) Minutes$/,
+    FORMAT_OUTPUTV          => qr/^([.\d]+) Volts$/,
+    FORMAT_ITEMP            => qr/^([.\d]+) C Internal$/,
+    FORMAT_BATTV            => qr/^([.\d]+) Volts$/
+};
+
+my $np = Nagios::Plugin->new(
+    version     => VERSION,
+    blurb       => BLURB,
+    shortname   => SHORTNAME,
+    usage       => USAGE,
+    license     => LICENSE,
+    timeout     => TIMEOUT,
+);
+
+$np->add_arg(
+    spec        => 'apcaccess|a=s',
+    help        => 'Absolute path to apcaccess binary (default %s)',
+    default     => APCACCESS,
+);
+
+$np->add_arg(
+    spec        => 'warning|w=i',
+    help        => 'Exit with WARNING status if the load on the UPS exceeds PERCENT%',
+    label       => 'PERCENT',
+    required    => 1,
+);
+
+$np->add_arg(
+    spec        => 'critical|c=i',
+    help        => 'Exit with CRITICAL status if the load on the UPS exceeds PERCENT%',
+    label       => 'PERCENT',
+    required    => 1,
+);
+
+$np->getopts;
+
+unless (substr($np->opts->apcaccess, 0, 1) eq '/') {
+    plugin_die($np,
+        'You must provide an absolute path to the apcaccess binary'
+    );
+}
+
+unless (-x $np->opts->apcaccess) {
+    plugin_die($np, sprintf(
+        "`%s' does not exist or is not executable",
+        $np->opts->apcaccess
+    ));
+}
+
+alarm $np->opts->timeout;
+
+my $apcaccess = $np->opts->apcaccess;
+my @lines = qx($apcaccess 2>/dev/null);
+
+alarm 0;
+
+if ($? == -1) {
+    $np->nagios_die(sprintf(
+        "Failed to execute `%s'",
+        $np->opts->apcaccess
+    ));
+} elsif ($? & 127) {
+    $np->nagios_die(sprintf(
+        "`%s' died with signal %d",
+        $np->opts->apcaccess,
+        ($? & 127)
+    ));
+}
+
+my $retval = $? >> 8;
+
+if ($retval != 0) {
+    $np->nagios_die(sprintf(
+        "`%s' failed with exit code %d",
+        $np->opts->apcaccess,
+        $retval
+    ));
+}
+
+my %values = ();
+
+foreach my $line (@lines) {
+    next unless $line =~ /^([A-Z]+)\s+:\s+(.+?)\s*$/;
+    $values{$1} = $2;
+}
+
+my $status = $values{STATUS};
+my $loadpct = $values{LOADPCT};
+my $linev = $values{LINEV};
+my $bcharge = $values{BCHARGE};
+my $timeleft = $values{TIMELEFT};
+my $outputv = $values{OUTPUTV};
+my $itemp = $values{ITEMP};
+my $battv = $values{BATTV};
+
+if (!defined($status)) {
+    $np->nagios_die("Could not determine UPS status");
+}
+
+if (defined($loadpct) && $loadpct =~ FORMAT_LOADPCT) {
+    $loadpct = $1;
+} else {
+    $np->nagios_die("Could not determine UPS load");
+}
+
+$np->add_perfdata(
+    label       => 'load',
+    value       => $loadpct,
+    uom         => '%',
+    min         => 0,
+    max         => 100,
+    warning     => $np->opts->warning,
+    critical    => $np->opts->critical
+);
+
+if (defined($linev) && $linev =~ FORMAT_LINEV) {
+    $np->add_perfdata(
+        label       => 'line_voltage',
+        value       => $1,
+        uom         => 'V'
+    );
+}
+
+if (defined($bcharge) && $bcharge =~ FORMAT_BCHARGE) {
+    $np->add_perfdata(
+        label   => 'battery_charge',
+        value   => $1,
+        uom     => '%',
+        min     => 0,
+        max     => 100
+    );
+}
+
+if (defined($timeleft) && $timeleft =~ FORMAT_TIMELEFT) {
+    $np->add_perfdata(
+        label   => 'timeleft',
+        value   => $1,
+        uom     => 'M'
+    );
+}
+
+if (defined($outputv) && $outputv =~ FORMAT_OUTPUTV) {
+    $np->add_perfdata(
+        label   => 'output_voltage',
+        value   => $1,
+        uom     => 'V'
+    );
+}
+
+if (defined($itemp) && $itemp =~ FORMAT_ITEMP) {
+    $np->add_perfdata(
+        label   => 'internal_temperature',
+        value   => $1,
+        uom     => 'C'
+    );
+}
+
+if (defined($battv) && $battv =~ FORMAT_BATTV) {
+    $np->add_perfdata(
+        label   => 'battery_voltage',
+        value   => $1,
+        uom     => 'V'
+    );
+}
+
+my $status_code;
+my $status_string;
+
+if ($status eq STATUS_CALIBRATION) {
+    $status_code = WARNING;
+    $status_string = "calibrating";
+} elsif ($status eq STATUS_TRIM) {
+    $status_code = WARNING;
+    $status_string = "trimming voltage";
+} elsif ($status eq STATUS_BOOST) {
+    $status_code = WARNING;
+    $status_string = "boosting voltage";
+} elsif ($status eq STATUS_ONLINE) {
+    $status_code = OK;
+    $status_string = "online";
+} elsif ($status eq STATUS_ONBATTERY) {
+    $status_code = WARNING;
+    $status_string = "on battery";
+} elsif ($status eq STATUS_OVERLOADED) {
+    $status_code = CRITICAL;
+    $status_string = "overloaded";
+} elsif ($status eq STATUS_LOWBATTERY) {
+    $status_code = CRITICAL;
+    $status_string = "low battery";
+} elsif ($status eq STATUS_REPLACEBATTERY) {
+    $status_code = CRITICAL;
+    $status_string = "replace battery";
+} elsif ($status eq STATUS_NOBATTERY) {
+    $status_code = CRITICAL;
+    $status_string = "no battery";
+} elsif ($status eq STATUS_COMMLOST) {
+    $status_code = UNKNOWN;
+    $status_string = "communications lost";
+} elsif ($status eq STATUS_SHUTDOWN) {
+    $status_code = CRITICAL;
+    $status_string = "shutting down";
+} else {
+    $np->nagios_exit(UNKNOWN, sprintf(
+        "Unrecognised device status: %s",
+        $status
+    ));
+}
+
+$np->add_message($status_code,
+    "Status: ${status_string}"
+);
+
+my $load_code = $np->check_threshold(
+    check       => $loadpct,
+    warning     => $np->opts->warning,
+    critical    => $np->opts->critical
+);
+
+$np->add_message($load_code, sprintf(
+    "Load capacity used: %.1f%%",
+    $loadpct,
+));
+
+my ($code, $message) = $np->check_messages(join => ' / ');
+
+$np->nagios_exit($code, $message);
