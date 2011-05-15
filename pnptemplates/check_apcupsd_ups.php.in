@@ -1,0 +1,76 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_apcupsd_ups.pl
+# Distributed with @PACKAGE_STRING@
+#
+
+# Some perfdata values are dependent on the model of the UPS being
+# monitored. As a result, we must define graphs dynamically based
+# upon the label.
+$i = 1;
+foreach (array_values($this->DS) as $value) {
+	switch ($value['LABEL']) {
+	case 'load':
+		$opt[$i] = "--vertical-label 'Load %' --slope-mode -l0 -u100 -r --title 'UPS Load for $hostname'";
+		$def[$i] = rrd::def('load', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] .= rrd::area('load', '#3F0', 'Load');
+		$def[$i] .= rrd::gprint('load', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lf%%');
+		$def[$i] .= rrd::line1('load', '#000');
+		if (!empty($value['WARN']))
+			$def[$i] .= rrd::hrule($value['WARN'], '#FFFF00', 'Warning\n');
+		if (!empty($value['CRIT']))
+			$def[$i] .= rrd::hrule($value['CRIT'], '#FF0000', 'Critical');
+		$i++;
+		break;
+	case 'line_voltage':
+		$opt[$i] = "--vertical-label 'Volts' --slope-mode --title 'UPS Line Voltage for $hostname'";
+		$def[$i] = rrd::def('voltage', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] .= rrd::area('voltage', '#3F0', 'Line Voltage');
+		$def[$i] .= rrd::gprint('voltage', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lfV');
+		$def[$i] .= rrd::line1('voltage', '#000');
+		$i++;
+		break;
+	case 'output_voltage':
+		$opt[$i] = "--vertical-label 'Volts' --slope-mode --title 'UPS Output Voltage for $hostname'";
+		$def[$i] = rrd::def('ovoltage', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] .= rrd::area('ovoltage', '#3F0', 'Output Voltage');
+		$def[$i] .= rrd::gprint('ovoltage', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lfV');
+		$def[$i] .= rrd::line1('ovoltage', '#000');
+		$i++;
+		break;
+	case 'battery_voltage':
+		$opt[$i] = "--vertical-label 'Volts' --slope-mode --title 'UPS Battery Voltage for $hostname'";
+		$def[$i] = rrd::def('bvoltage', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] .= rrd::area('bvoltage', '#3F0', 'Internal Voltage');
+		$def[$i] .= rrd::gprint('bvoltage', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lfV');
+		$def[$i] .= rrd::line1('bvoltage', '#000');
+		$i++;
+		break;
+	case 'battery_charge':
+		$opt[$i] = "--vertical-label '%' --slope-mode -l0 -u100 -r --title 'UPS Battery Charge for $hostname'";
+		$def[$i] = rrd::def('charge', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] .= rrd::area('charge', '#3F0', 'Battery Charge');
+		$def[$i] .= rrd::gprint('charge', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lf%%');
+		$def[$i] .= rrd::line1('charge', '#000');
+		$i++;
+		break;
+	case 'internal_temperature':
+		$opt[$i] = "--vertical-label '°C' --slope-mode --title 'UPS Internal Temperature for $hostname'";
+		$def[$i] = rrd::def('itemp', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] .= rrd::area('itemp', '#3F0', 'Internal Temperature');
+		$def[$i] .= rrd::gprint('itemp', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lf°C');
+		$def[$i] .= rrd::line1('itemp', '#000');
+		$i++;
+		break;
+	case 'timeleft':
+		$opt[$i] = "--vertical-label 'Minutes' --slope-mode --type 'UPS Battery Time for $hostname'";
+		$def[$i] = rrd::def('timeleft', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+		$def[$i] = rrd::area('timeleft', '#3F0', 'Battery Time');
+		$def[$i] = rrd::gprint('timeleft', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lfmins');
+		$def[$i] = rrd::line1('timeleft', '#000#');
+		$i++;
+		break;
+	}
+}
+?>
