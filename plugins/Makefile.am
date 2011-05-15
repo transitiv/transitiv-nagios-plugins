@@ -3,6 +3,7 @@ TESTS = t/check_wordpress.t \
 	t/check_cisco_load.t \
 	t/check_cisco_psu.t \
 	t/check_cisco_temperatures.t \
+	t/check_cisco_fans.t \
 	t/check_snmp_uptime.t \
 	t/check_snmp_printer.t \
 	t/check_snmp_interface.t \
