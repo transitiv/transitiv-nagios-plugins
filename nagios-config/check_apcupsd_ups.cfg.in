@@ -1,0 +1,4 @@
+define command {
+	command_name	check_apcupsd_ups
+	command_line	@PLUGINDIR@/check_apcupsd_ups.pl -w '$ARG1$' -c '$ARG2$'
+}
