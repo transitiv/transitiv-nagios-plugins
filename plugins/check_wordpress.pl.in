@@ -28,7 +28,7 @@ use constant {
 the latest version of WordPress. The site must provide a generator
 meta tag in order to determine the currently installed version (this
 is the default in most themes).},
-    SHORTNAME   => 'check_wordpress',
+    SHORTNAME   => 'Wordpress',
     USAGE       => q{Usage: %s -I <address> [-H <virtualhost>] [-u <uri>]
        [-p <port>] [-t <timeout>]},
     LICENSE     => q{@COPYRIGHT@

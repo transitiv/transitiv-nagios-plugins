@@ -26,7 +26,7 @@ use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the number of active calls on a
 device supporting the DIAL-CONTROL-MIB.},
-    SHORTNAME   => 'check_active_calls',
+    SHORTNAME   => 'Active Calls',
     USAGE       => q{Usage: %s -H <host> [-C <community>] [-t <timeout>] [-n <number>]
        [-w <threshold>] [-c <threshold>]},
     LICENSE     => q{@COPYRIGHT@

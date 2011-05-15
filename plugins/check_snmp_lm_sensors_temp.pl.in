@@ -25,7 +25,7 @@ use Nagios::Plugin;
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin uses SNMP to query hosts for temperature data reported by lm-sensors.},
-    SHORTNAME   => 'check_snmp_lm_sensors_temp',
+    SHORTNAME   => 'Temperature',
     USAGE       => q{Usage: %s -H <host> -n <interface name> [-i] [-2] [-C <community>]},
     LICENSE     => q{@COPYRIGHT@
 

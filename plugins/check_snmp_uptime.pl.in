@@ -87,7 +87,7 @@ sub plugin_die {
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => 'This plugin checks the uptime of a device via SNMP.',
-    SHORTNAME   => 'check_snmp_uptime',
+    SHORTNAME   => 'Uptime',
     USAGE       => q{Usage: %s -H <host> [-2] [-C <snmp_community>] [-t <timeout>]
        [-c <threshold>] [-w <threshold>]},
     TIMEOUT     => 10,

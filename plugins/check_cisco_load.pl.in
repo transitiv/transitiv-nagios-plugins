@@ -27,7 +27,7 @@ use constant {
     BLURB       => q{This plugin checks the CPU load average on Cisco devices that support
 the CISCO-PROCESS-MIB or the OLD-CISCO-CPU-MIB. Currently only SNMPv2
 is supported.},
-    SHORTNAME   => 'check_cisco_load',
+    SHORTNAME   => 'Load',
     USAGE       => q{Usage: %s -H <host> -w <WLOAD5m,WLOAD1m,WLOAD5s>
        -c <CLOAD5m,CLOAD1m,CLOAD5s> [-C <community>]},
     LICENSE     => q{@COPYRIGHT@

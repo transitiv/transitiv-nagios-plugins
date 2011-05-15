@@ -26,7 +26,7 @@ use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the status of a printer that supports the RFC1759
 printer MIB},
-    SHORTNAME   => 'check_snmp_printer',
+    SHORTNAME   => 'Printer',
     USAGE       => q{Usage: %s -H <host> [-C <community>] [-2] [-t <timeout>]},
     LICENSE     => q{@COPYRIGHT@
 

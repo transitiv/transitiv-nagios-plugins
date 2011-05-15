@@ -25,7 +25,7 @@ use Nagios::Plugin;
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugins checks memory usage on devices supporting the HOST-RESOURCES-MIB},
-    SHORTNAME   => 'check_snmp_mem_simple',
+    SHORTNAME   => 'Memory Usage',
     USAGE       => q{Usage: %s -H <host> [-C <community>] [-t <timeout>]
     -w <percentage> -c <percentage>},
     TIMEOUT     => 10,

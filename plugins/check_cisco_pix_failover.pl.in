@@ -25,7 +25,7 @@ use Nagios::Plugin;
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the failover status of a Cisco PIX firewall},
-    SHORTNAME   => 'check_cisco_pix_failover',
+    SHORTNAME   => 'PIX Failover',
     USAGE       => q{Usage: %s -H <host> [-1] [-C <community>] [-t <timeout>]},
     LICENSE     => q{@COPYRIGHT@
 
