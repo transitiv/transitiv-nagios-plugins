@@ -66,7 +66,7 @@ foreach (array_values($this->DS) as $value) {
 	case 'timeleft':
 		$opt[$i] = "--vertical-label 'Minutes' --slope-mode --type 'UPS Battery Time for $hostname'";
 		$def[$i] = rrd::def('timeleft', $value['RRDFILE'], $value['DS'], 'AVERAGE');
-		$def[$i] = rrd::area('timeleft', '#3F0', 'Battery Time');
+		$def[$i] = rrd::area('timeleft', '#3F0', 'Battery Remaining');
 		$def[$i] = rrd::gprint('timeleft', array('LAST', 'AVERAGE', 'MAX'),  '%6.1lfmins');
 		$def[$i] = rrd::line1('timeleft', '#000#');
 		$i++;
