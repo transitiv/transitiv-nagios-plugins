@@ -1,5 +1,5 @@
 AC_PREREQ([2.65])
-AC_INIT([transitiv-nagios-plugins], [0.6], [nagios@transitiv.co.uk])
+AC_INIT([transitiv-nagios-plugins], [0.7], [nagios@transitiv.co.uk])
 AC_SUBST(PACKAGE_COPYRIGHT,
   "Copyright 2011 (c) Transitiv Technologies <info@transitiv.co.uk>"
 )
