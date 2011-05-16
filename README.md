@@ -36,6 +36,9 @@ documentation for further info).
   if a device has a habit of rebooting before Nagios can notice).
 * `check_cisco_pix_failover.pl` Checks the status of a failover
   configuration on a Cisco PIX firewall.
+* `check_snmp_interface.pl` Checks the status of a network interface via
+  SNMP. 64 bit counters are supported in conjunction with SNMPv2.
+  Performance data is returned for link speed and input/output octets.
 
 ### Other
 
@@ -43,6 +46,14 @@ documentation for further info).
   latest available version by querying the WordPress API. The site must
   include a generator meta tag in order for the plugin to ascertain the
   currently installed version (this is the default in most themes).
+* `check_apcupsd_ups.pl` Checks the status of a UPS using apcupsd.
+  Alerts will also be generated if the load percentage on the UPS
+  exceeds that specified by the warning and critical command line
+  arguments. Performance data is returned for various attributes,
+  including load, line voltage, battery charge, temperature, output
+  voltage and battery voltage.
+* `check_linux_memory.pl` A simple plugin that checks the amount of
+  physical memory available to applications on a Linux system.
 
 ## Installation
 
