@@ -14,12 +14,18 @@ $def[1] = rrd::def('buffers', $RRDFILE[1], $DS[1], 'AVERAGE');
 $def[1] .= rrd::def('cached', $RRDFILE[1], $DS[2], 'AVERAGE');
 $def[1] .= rrd::def('allocated', $RRDFILE[1], $DS[3], 'AVERAGE');
 
-$def[1] .= rrd::area('allocated', '#EA644A', rrd::cut('Allocated'));
+$def[1] .= rrd::area('allocated', '#7648eb', rrd::cut('Allocated'));
 $def[1] .= rrd::gprint('allocated', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
-$def[1] .= rrd::area('cached', '#EC9D48', rrd::cut('Cached'), TRUE);
+
+$def[1] .= rrd::area('cached', '#48c3eb', rrd::cut('Cached'), TRUE);
 $def[1] .= rrd::gprint('cached', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
-$def[1] .= rrd::area('buffers', '#ECD748', rrd::cut('Buffers'), TRUE);
+
+$def[1] .= rrd::area('buffers', '#54eb48', rrd::cut('Buffers'), TRUE);
 $def[1] .= rrd::gprint('buffers', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%s');
+
+$def[1] .= rrd::line1('allocated', '#4b0082');
+$def[1] .= rrd::line1('cached', '#1e8cbe', false, true);
+$def[1] .= rrd::line1('buffers', '#25bb28', false, true);
 
 if (!empty($WARN[3])) {
 	$def[1] .= rrd::hrule($WARN[3], '#FFFF00', 'Warning\n');
