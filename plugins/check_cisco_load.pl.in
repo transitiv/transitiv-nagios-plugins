@@ -22,11 +22,17 @@ use strict;
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
+sub plugin_die {
+    my ($np, $msg) = @_;
+    print $np->opts->_usage . "\n";
+    print $msg . "\n";
+    exit(UNKNOWN);
+}
+
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the CPU load average on Cisco devices that support
-the CISCO-PROCESS-MIB or the OLD-CISCO-CPU-MIB. Currently only SNMPv2
-is supported.},
+the CISCO-PROCESS-MIB or the OLD-CISCO-CPU-MIB.},
     SHORTNAME   => 'Load',
     USAGE       => q{Usage: %s -H <host> -w <WLOAD5m,WLOAD1m,WLOAD5s>
        -c <CLOAD5m,CLOAD1m,CLOAD5s> [-C <community>]},
@@ -47,23 +53,21 @@ my $np = Nagios::Plugin->new(
     timeout     => TIMEOUT,
 );
 
-# Define the OIDs we are interested in
-# OLD-CISCO-CPU-MIB
-# avgBusy5
-my $oid_old_cpu_5m = '1.3.6.1.4.1.9.2.1.58.0';
-# avgBusy1
-my $oid_old_cpu_1m = '1.3.6.1.4.1.9.2.1.57.0';
-# busyPer
-my $oid_old_cpu_5s = '1.3.6.1.4.1.9.2.1.56.0';
-# CISCO-PROCESS-MIB
-# cpmCPUTotal5min.1
-my $oid_cpu_5m = '.1.3.6.1.4.1.9.9.109.1.1.1.1.5.1';
-# cpmCPUTotal1min.1
-my $oid_cpu_1m = '.1.3.6.1.4.1.9.9.109.1.1.1.1.4.1';
-# cpmCPUTotal5sec.1
-my $oid_cpu_5s = '.1.3.6.1.4.1.9.9.109.1.1.1.1.3.1';
+use constant {
+    # OLD-CISCO-CPU-MIB::avgBusy5
+    OID_OLD_CPU_5M  => '1.3.6.1.4.1.9.2.1.58.0',
+    # OLD-CISCO-CPU-MIB::avgBusy1
+    OID_OLD_CPU_1M  => '1.3.6.1.4.1.9.2.1.57.0',
+    # OLD-CISCO-CPU-MIB::busyPer
+    OID_OLD_CPU_5S  => '1.3.6.1.4.1.9.2.1.56.0',
+    # CISCO-PROCESS-MIB::cpmCPUTotal5min.1
+    OID_CPU_5M      => '1.3.6.1.4.1.9.9.109.1.1.1.1.5.1',
+    # CISCO-PROCESS-MIB::cpmCPUTotal1min.1
+    OID_CPU_1M      => '1.3.6.1.4.1.9.9.109.1.1.1.1.4.1',
+    # CISCO-PROCESS-MIB::cpmCPUTotal5sec.1
+    OID_CPU_5S      => '1.3.6.1.4.1.9.9.109.1.1.1.1.3.1',
+};
 
-# Define our arguments
 $np->add_arg(
     spec        => 'host|H=s',
     help        => q{IP address or hostname (use an IP address if possible to prevent a
@@ -79,15 +83,20 @@ $np->add_arg(
 );
 
 $np->add_arg(
+    spec        => '1',
+    help        => 'Use SNMP protocol version 1',
+);
+
+$np->add_arg(
     spec        => 'warning|w=s',
-    help        => 'Exit with WARNING status if CPU load exceeds WLOADn',
+    help        => 'Exit with WARNING status if CPU load exceeds WLOADn%',
     label       => 'WLOAD15m,WLOAD5m,WLOAD5s',
     required    => 1,
 );
 
 $np->add_arg(
     spec        => 'critical|c=s',
-    help        => 'Exit with CRITICAL status if CPU load exceeds CLOADn',
+    help        => 'Exit with CRITICAL status if CPU load exceeds CLOADn%',
     label       => 'CLOAD15m,CLOAD5m,CLOAD5s',
     required    => 1,
 );
@@ -101,41 +110,51 @@ $np->add_arg(
 );
 
 $np->getopts;
-alarm $np->opts->timeout;
 
 my @warnings = split(/,/, $np->opts->warning);
 if (scalar(@warnings) != 3) {
-    $np->nagios_die(
-        "You must specify 3 warning levels"
+    plugin_die(
+        $np,
+        "Invalid format for warning argument, try --help"
     );
 }
 
 my @criticals = split(/,/, $np->opts->critical);
 if (scalar(@criticals) != 3) {
-    $np->nagios_die(
-        "You must specify 3 critical levels"
+    plugin_die(
+        "Invalid format for critical argument, try --help"
     );
 }
 
+alarm $np->opts->timeout;
+
 my ($session, $error) = Net::SNMP->session(
     -hostname   => $np->opts->host,
-    -version    => '2',
+    -version    => $np->opts->{'1'} ? '1' : '2',
     -community  => $np->opts->community,
     -timeout    => $np->opts->timeout/4,
     -retries    => 1,
     -port       => 161,
 );
 
-if (! defined($session)) {
+if (!defined($session)) {
     alarm 0;
     $np->nagios_die($error);
 }
 
 my @oids;
 if ($np->opts->{'old-device'}) {
-    @oids = ($oid_old_cpu_5m, $oid_old_cpu_1m, $oid_old_cpu_5s);
+    @oids = (
+        OID_OLD_CPU_5S,
+        OID_OLD_CPU_1M,
+        OID_OLD_CPU_5M,
+    );
 } else {
-    @oids = ($oid_cpu_5m, $oid_cpu_1m, $oid_cpu_5s);
+    @oids = (
+        OID_CPU_5S,
+        OID_CPU_1M,
+        OID_CPU_5M,
+    );
 }
 
 my $result = $session->get_request(
@@ -149,9 +168,10 @@ if (!defined($result)) {
     $np->nagios_die($error);
 }
 
-my $cpu_5m = $$result{$np->opts->{'old-device'} ? $oid_old_cpu_5m : $oid_cpu_5m};
-my $cpu_1m = $$result{$np->opts->{'old-device'} ? $oid_old_cpu_1m : $oid_cpu_1m};
-my $cpu_5s = $$result{$np->opts->{'old-device'} ? $oid_old_cpu_5s : $oid_cpu_5s};
+my $cpu_5m = $$result{$np->opts->{'old-device'} ? OID_OLD_CPU_5M : OID_CPU_5M};
+my $cpu_1m = $$result{$np->opts->{'old-device'} ? OID_OLD_CPU_1M : OID_CPU_1M};
+my $cpu_5s = $$result{$np->opts->{'old-device'} ? OID_OLD_CPU_5S : OID_CPU_5S};
+
 my ($code, $message);
 
 $code = $np->check_threshold(
@@ -159,6 +179,7 @@ $code = $np->check_threshold(
     warning     => $warnings[0],
     critical    => $criticals[0],
 );
+
 $np->add_message(
     $code,
     sprintf("5 minutes: %i%%", $cpu_5m)
@@ -169,6 +190,7 @@ $code = $np->check_threshold(
     warning     => $warnings[1],
     critical    => $criticals[1],
 );
+
 $np->add_message(
     $code,
     sprintf("1 minute: %i%%", $cpu_1m)
@@ -179,27 +201,28 @@ $code = $np->check_threshold(
     warning     => $warnings[2],
     critical    => $criticals[2],
 );
+
 $np->add_message(
     $code,
     sprintf("5 seconds: %i%%", $cpu_5s)
 );
 
 $np->add_perfdata(
-    label       => 'load_5_min',
+    label       => '5 Minute CPU Load',
     value       => $cpu_5m,
     uom         => '%',
     warning     => $warnings[0],
     critical    => $criticals[0],
 );
 $np->add_perfdata(
-    label       => 'load_1_min',
+    label       => '1 Minute CPU Load',
     value       => $cpu_1m,
     uom         => '%',
     warning     => $warnings[1],
     critical    => $criticals[1],
 );
 $np->add_perfdata(
-    label       => 'load_5_sec',
+    label       => '5 second CPU Load',
     value       => $cpu_5s,
     uom         => '%',
     warning     => $warnings[2],
