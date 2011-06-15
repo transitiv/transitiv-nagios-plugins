@@ -11,7 +11,8 @@ TESTS = t/check_wordpress.t \
 	t/check_snmp_mem_simple.t \
 	t/check_cisco_pix_failover.t \
 	t/check_apcupsd_ups.t \
-	t/check_linux_memory.t
+	t/check_linux_memory.t \
+	t/check_cisco_memory.t
 
 libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_printer.pl \
@@ -26,7 +27,8 @@ libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_mem_simple.pl \
 	check_cisco_pix_failover.pl \
 	check_linux_memory.pl \
-	check_apcupsd_ups.pl
+	check_apcupsd_ups.pl \
+	check_cisco_memory.pl
 
 CLEANFILES = $(libexec_SCRIPTS)
 EXTRA_DIST = $(TESTS) \
@@ -43,7 +45,8 @@ EXTRA_DIST = $(TESTS) \
 	check_snmp_mem_simple.pl.in \
 	check_cisco_pix_failover.pl.in \
 	check_linux_memory.pl.in \
-	check_apcupsd_ups.pl.in
+	check_apcupsd_ups.pl.in \
+	check_cisco_memory.pl.in
 
 do_subst = sed -e 's,[@]VERSION[@],$(PACKAGE_VERSION),g' \
 	-e 's,[@]BUGREPORT[@],$(PACKAGE_BUGREPORT),g' \

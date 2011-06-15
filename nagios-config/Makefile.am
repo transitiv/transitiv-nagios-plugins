@@ -11,7 +11,8 @@ sysconf_DATA = check_wordpress.cfg \
 	check_snmp_interface.cfg \
 	check_snmp_mem_simple.cfg \
 	check_apcupsd_ups.cfg \
-	check_snmp_lm_sensors_temp.cfg
+	check_snmp_lm_sensors_temp.cfg \
+	check_cisco_memory.cfg
 
 EXTRA_DIST = check_wordpress.cfg.in \
 	check_cisco_fans.cfg.in \
@@ -26,7 +27,8 @@ EXTRA_DIST = check_wordpress.cfg.in \
 	check_snmp_interface.cfg.in \
 	check_snmp_mem_simple.cfg.in \
 	check_apcupsd_ups.cfg.in \
-	check_snmp_lm_sensors_temp.cfg.in
+	check_snmp_lm_sensors_temp.cfg.in \
+	check_cisco_memory.cfg
 
 CLEANFILES = $(sysconf_DATA)
 

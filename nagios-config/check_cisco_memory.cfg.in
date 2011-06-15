@@ -1,0 +1,9 @@
+define command {
+	command_name	check_cisco_memory
+	command_line	@PLUGINDIR@/check_cisco_memory.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
+
+define command {
+	command_name	check_cisco_memory_1
+	command_line	@PLUGINDIR@/check_cisco_load.pl -H '$HOSTADDRESS$' -1 -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
