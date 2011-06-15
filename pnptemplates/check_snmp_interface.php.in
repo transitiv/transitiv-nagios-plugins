@@ -19,7 +19,7 @@ $def[1] .= rrd::line1('out', '#0000EE', 'Outgoing');
 $def[1] .= rrd::gprint('out', array('LAST', 'AVERAGE', 'MAX'), '%6.1lf%sbps');
 
 $def[1] .= rrd::comment('\s');
-$def[1] .= rrd::gprint('ls', 'LAST', 'Link Speed\: %6.1lf%sbpsi\n');
+$def[1] .= rrd::gprint('ls', 'LAST', 'Link Speed\: %6.1lf%sbps\n');
 $def[1] .= rrd::comment('\s');
 
 $def[1] .= " VDEF:intotal=in,TOTAL";
