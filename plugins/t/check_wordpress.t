@@ -35,7 +35,7 @@ ok($result->exit_status == 3, 'UNKNOWN returned for unresponsive host');
 SKIP: {
 	my $io = IO::Socket::INET->new('google.co.uk:80');
 	
-	skip "Can't connect to google.co.uk", 2 unless defined($io->connected);
+	skip "Can't connect to google.co.uk", 1 unless defined($io->connected);
 
 	$io->close;
 
