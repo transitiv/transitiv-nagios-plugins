@@ -23,7 +23,7 @@ documentation for further info).
 * `check_cisco_load.pl` Checks the CPU load average against user defined
   thresholds on Cisco devices supporting the CISCO-PROCESS-MIB or
   the OLD-CISCO-CPU-MIB.
- * `check_cisco_memory.pl` Checks the memory usage of the various memory
+* `check_cisco_memory.pl` Checks the memory usage of the various memory
    pools on Cisco devices supporting the CISCO-MEMORY-POOL-MIB.
 * `check_cisco_psu.pl` Checks the status of power supply units on Cisco
   devices supporting the CISCO-ENVMON-MIB.
