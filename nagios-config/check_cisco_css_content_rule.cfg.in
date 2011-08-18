@@ -1,0 +1,4 @@
+define command {
+	command_name	check_cisco_css_content_rule
+	command_line	@PLUGINDIR@/check_cisco_css_content_rule.pl -H '$HOSTADDRESS$' -C '$ARG1$' -o '$ARG2$' -n '$ARG3$' -w '$ARG4$' -c '$ARG5$'
+}

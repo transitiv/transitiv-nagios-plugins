@@ -1,0 +1,54 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_cisco_css_content_rule.pl
+# Distributed with @PACKAGE_STRING@
+#
+if (!function_exists('cr_cmp')) {
+	function cr_cmp($a, $b) {
+		return strcmp($a['NAME'], $b['NAME']);
+	}
+}
+
+$hits = array();
+$bytes = array();
+
+foreach ($this->DS as $key => $value) {
+	if (stripos($value['NAME'], 'hits') !== FALSE) {
+		array_push($hits, $value);
+	} else if (stripos($value['NAME'], 'bytes') !== FALSE) {
+		array_push($bytes, $value);
+	}
+}
+
+usort($hits, 'cr_cmp');
+usort($bytes, 'cr_cmp');
+
+$opt[1] = "--vertical-label 'Hits per second' --slope-mode -l0 --title '$hostname - {$this->MACRO['DISP_SERVICEDESC']}: Hits per second'";
+$def[1] = '';
+
+foreach($hits as $key => $value) {
+	$def[1] .= rrd::def("var_$key", $value['RRDFILE'], $value['DS'], 'AVERAGE');
+}
+
+$i = 1;
+foreach($hits as $key => $value) {
+	$label = str_replace('hits', '', $value['LABEL']);
+	$def[1] .= rrd::area("var_$key", rrd::color($i++), rrd::cut($label), true);
+	$def[1] .= rrd::gprint("var_$key", array('LAST', 'AVERAGE', 'MAX'), '%6.2lf');
+}
+
+$opt[2] = "--vertical-label 'Bytes per second' --slope-mode -l0 --title '$hostname - {$this->MACRO['DISP_SERVICEDESC']}: Bytes per second'";
+$def[2] = '';
+
+foreach($bytes as $key => $value) {
+	$def[2] .= rrd::def("var_$key", $value['RRDFILE'], $value['DS'], 'AVERAGE');
+}
+
+$i = 1;
+foreach($bytes as $key => $value) {
+	$label = str_replace('bytes', '', $value['LABEL']);
+	$def[2] .= rrd::area("var_$key", rrd::color($i++), rrd::cut($label), true);
+	$def[2] .= rrd::gprint("var_$key", array('LAST', 'AVERAGE', 'MAX'), '%6.2lf%sB');
+}
+?>
