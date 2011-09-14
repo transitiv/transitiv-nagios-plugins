@@ -19,7 +19,7 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
-use Net::SNMP;
+use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
 sub plugin_die($$) {
