@@ -150,14 +150,14 @@ my ($session, $error) = Net::SNMP->session(
     -port       => $np->opts->port,
 );
 
-$session->translate([
-    -nosuchinstance => 0,
-]);
-
 unless (defined($session)) {
     alarm 0;
     $np->nagios_die($error);
 }
+
+$session->translate([
+    -nosuchinstance => 0,
+]);
 
 my $desc_table = $session->get_table(
     -baseoid    => OID_DESC_TABLE,
