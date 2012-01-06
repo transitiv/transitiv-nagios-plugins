@@ -199,15 +199,13 @@ if ($np->opts->{'64bit'}) {
     $out_octets_oid = OID_OUT_OCTETS_TABLE . '.' . $int_index;
 }
 
-my @oids = (
-    $int_state_oid,
-    $int_speed_oid,
-    $in_octets_oid,
-    $out_octets_oid,
-);
-
 my $result = $session->get_request(
-    -varbindlist    => \@oids,
+    -varbindlist    => [
+        $int_state_oid,
+        $int_speed_oid,
+        $in_octets_oid,
+        $out_octets_oid,
+    ]
 );
 
 unless (defined($result)) {
