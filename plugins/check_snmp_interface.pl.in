@@ -27,7 +27,8 @@ use constant {
     BLURB       => q{This plugin checks the status of an interface on devices supporting
 the IF-MIB.},
     SHORTNAME   => 'Interface',
-    USAGE       => q{Usage: %s -H <host> -n <interface name> [-2] [-C <community>] [-i] [--64bit]},
+    USAGE       => q{Usage: %s -H <host> -n <interface name> [-2]
+       [-p <port>] [-C <community>] [-i] [-x]},
     LICENSE     => q{@COPYRIGHT@
 
 This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
