@@ -149,29 +149,24 @@ my ($session, $error) = Net::SNMP->session(
     -port       => $np->opts->port,
 );
 
-if (! defined($session)) {
+unless (defined($session)) {
     alarm 0;
     $np->nagios_die($error);
 }
 
-# Walk the interface description table
 my $desc_table = $session->get_table(
     -baseoid    => OID_DESC_TABLE,
 );
 
-# Bail if we couldn't walk the table
-if (! defined($desc_table)) {
+unless (defined($desc_table)) {
     alarm 0;
     $error = $session->error;
     $session->close();
     $np->nagios_die($error);
 }
 
-# Index number of the given interface in the table
 my $int_index;
 
-# Look for the specified interface in the table
-# If found, extract its index number
 while (my ($key, $val) = each %$desc_table) {
     if ($val eq $np->opts->name) {
         my @oids = split /\./, $key;
@@ -180,15 +175,14 @@ while (my ($key, $val) = each %$desc_table) {
     }
 }
 
-# Check we actually got an interface
-if (!defined($int_index)) {
+unless (defined($int_index)) {
+    $session->close();
     $np->nagios_die(sprintf(
         "No interface found named `%s'",
         $np->opts->name
     ));
 }
 
-# Build the OIDs using the interface index found above 
 my $int_state_oid = OID_STATE_TABLE . '.' . $int_index;
 my $int_speed_oid = OID_SPEED_TABLE . '.' . $int_index;
 my ($in_octets_oid, $out_octets_oid);
@@ -212,14 +206,14 @@ my $result = $session->get_request(
     -varbindlist    => \@oids,
 );
 
-if (!defined($result)) {
+unless (defined($result)) {
     alarm 0;
     $error = $session->error;
     $session->close();
     $np->nagios_die($error);
 }
 
-# disable the alarm now we've run the queries
+$session->close();
 alarm 0;
 
 # index the hash by the OID
