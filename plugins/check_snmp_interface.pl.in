@@ -125,16 +125,16 @@ $np->add_arg(
 );
 
 $np->add_arg(
-    spec        => '64bit',
-    help        => q{Query 64 bit counters for interface performance data. Must be used in
-   conjunction with SNMPv2 (see above)}
+    spec        => '64bit|x',
+    help        => q{Query 64 bit counters for interface performance data
+   NOTE: Not supported by SNMP version 1}
 );
 
 $np->getopts;
 
 if ($np->opts->{'64bit'} && !$np->opts->{'2'}) {
     print $np->opts->_usage . "\n";
-    print "Sorry, 64 bit counters are not supported by SNMPv1\n";
+    print "64 bit counters are not supported by SNMP version 1, try --help\n";
     exit(UNKNOWN);
 }
 
@@ -189,6 +189,7 @@ unless (defined($int_index)) {
 
 my $int_state_oid = OID_STATE_TABLE . '.' . $int_index;
 my $int_speed_oid = OID_SPEED_TABLE . '.' . $int_index;
+
 my ($in_octets_oid, $out_octets_oid);
 
 if ($np->opts->{'64bit'}) {
