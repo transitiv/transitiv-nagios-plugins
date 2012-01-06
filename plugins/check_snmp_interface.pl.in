@@ -149,6 +149,10 @@ my ($session, $error) = Net::SNMP->session(
     -port       => $np->opts->port,
 );
 
+$session->translate([
+    -nosuchinstance => 0,
+]);
+
 unless (defined($session)) {
     alarm 0;
     $np->nagios_die($error);
@@ -216,36 +220,41 @@ unless (defined($result)) {
 $session->close();
 alarm 0;
 
-# index the hash by the OID
-my $int_state = $$result{$int_state_oid} || STATUS_VALUE_UNKNOWN;
-my $int_speed = ($$result{$int_speed_oid} || 0);
-my $in_octets = $$result{$in_octets_oid} || 0;
-my $out_octets = $$result{$out_octets_oid} || 0;
+my $int_state = $$result{$int_state_oid};
 
-my ($code, $message);
+if ($int_state eq '') {
+    $np->nagios_die(sprintf(
+        'Unable to determine status of %s',
+        $np->opts->name
+    ));
+}
+
+my $code;
 
 if ($int_state == STATUS_VALUE_UP) {
-    $code = (defined($np->opts->inverse) ? CRITICAL : OK);
+    $code = $np->opts->inverse ? CRITICAL : OK;
 } elsif ($int_state == STATUS_VALUE_UNKNOWN) {
     $code = UNKNOWN;
 } else {
-    $code = (defined($np->opts->inverse) ? OK : CRITICAL);
+    $code = $np->opts->inverse ? OK : CRITICAL;
 }
 
 $np->add_perfdata(
-    label       => 'speed',
-    value       => $int_speed,
+    label       => 'Link Speed',
+    value       => $$result{$int_speed_oid} || 0,
     uom         => 'bps'
 );
+
 $np->add_perfdata(
-    label       => 'in_octets',
-    value       => $in_octets,
+    label       => 'In Octets',
+    value       => $$result{$in_octets_oid} || 0,
     uom         => 'c',
     min         => 0
 );
+
 $np->add_perfdata(
-    label       => 'out_octets',
-    value       => $out_octets,
+    label       => 'Out Octets',
+    value       => $$result{$out_octets_oid} || 0,
     uom         => 'c',
     min         => 0
 );
