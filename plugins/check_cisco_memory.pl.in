@@ -22,13 +22,6 @@ use strict;
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
-sub plugin_die($$) {
-    my ($np, $msg) = @_;
-    print $np->opts->_usage . "\n";
-    print $msg . "\n";
-    exit(UNKNOWN);
-}
-
 sub get_oid_index($) {
     my $oid = shift;
     my $idx = rindex($oid, '.');
