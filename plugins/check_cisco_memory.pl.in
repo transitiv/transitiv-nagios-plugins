@@ -34,7 +34,8 @@ use constant {
     BLURB       => q{This plugin checks memory usage on Cisco devices supporting the
 CISCO-MEMORY-POOL-MIB.},
     SHORTNAME   => 'Memory Usage',
-    USAGE       => q{Usage: %s -H <host> -w <percent> -c <percent> [-1] [-C <community>]},
+    USAGE       => q{Usage: %s -H <host> -w <percent> -c <percent> [-2]
+       [-p <port>] [-C <community>]},
     LICENSE     => q{@COPYRIGHT@
 
 This plugin is free software, and comes with ABSOLUTELY NO WARRANTY.
@@ -92,15 +93,13 @@ $np->add_arg(
 
 $np->add_arg(
     spec        => 'warning|w=i',
-    help        => 'Exit with WARNING status if memory usage exceeds PERCENT%',
-    label       => 'PERCENT',
+    help        => 'Exit with WARNING status if memory usage exceeds INTEGER%',
     required    => 1,
 );
 
 $np->add_arg(
     spec        => 'critical|c=i',
-    help        => 'Exit with CRITICAL status if memory usage exceeds PERCENT%',
-    label       => 'PERCENT',
+    help        => 'Exit with CRITICAL status if memory usage exceeds INTEGER%',
     required    => 1,
 );
 
