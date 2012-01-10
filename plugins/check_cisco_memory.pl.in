@@ -133,6 +133,8 @@ unless (defined($mem_table)) {
     $np->nagios_die($error);
 }
 
+$session->close();
+
 my $pools = ();
 
 foreach my $key (keys(%$mem_table)) {
