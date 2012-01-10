@@ -86,8 +86,8 @@ $np->add_arg(
 );
 
 $np->add_arg(
-    spec        => '1',
-    help        => 'Use SNMP protocol version 1',
+    spec        => '2',
+    help        => 'Use SNMP protocol version 2',
 );
 
 $np->add_arg(
@@ -110,7 +110,7 @@ alarm $np->opts->timeout;
 
 my ($session, $error) = Net::SNMP->session(
     -hostname   => $np->opts->host,
-    -version    => $np->opts->{'1'} ? '1' : '2',
+    -version    => $np->opts->{'2'} ? '2' : '1',
     -community  => $np->opts->community,
     -timeout    => $np->opts->timeout/4,
     -retries    => 1,
