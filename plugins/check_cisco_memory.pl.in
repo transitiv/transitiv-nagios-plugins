@@ -165,6 +165,7 @@ while (my ($key, $val) = each(%$pools)) {
         label       => $val->{name},
         value       => $val->{used},
         uom         => 'B',
+        min         => 0,
         max         => $total,
         warning     => $warn,
         critical    => $crit
