@@ -74,6 +74,12 @@ $np->add_arg(
 );
 
 $np->add_arg(
+    spec        => 'port|p=i',
+    help        => 'Port number (default: %s)',
+    default     => 161,
+);
+
+$np->add_arg(
     spec        => 'community|C=s',
     help        => 'SNMP community string (default: %s)',
     default     => 'public',
@@ -108,10 +114,10 @@ my ($session, $error) = Net::SNMP->session(
     -community  => $np->opts->community,
     -timeout    => $np->opts->timeout/4,
     -retries    => 1,
-    -port       => 161,
+    -port       => $np->opts->port,
 );
 
-if (!defined($session)) {
+unless (defined($session)) {
     alarm 0;
     $np->nagios_die($error);
 }
@@ -120,7 +126,7 @@ my $mem_table = $session->get_table(
     -baseoid    => OID_MEMORY_POOL,
 );
 
-if (!defined($mem_table)) {
+unless (defined($mem_table)) {
     alarm 0;
     $error = $session->error;
     $session->close();
