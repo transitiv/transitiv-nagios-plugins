@@ -4,6 +4,6 @@ define command {
 }
 
 define command {
-	command_name	check_cisco_temperatures_ignore_nonfunctional
-	command_line	@PLUGINDIR@/check_cisco_load.pl -H '$HOSTADDRESS$' -C '$ARG1$' -i
+	command_name	check_cisco_temperatures_2
+	command_line	@PLUGINDIR@/check_cisco_load.pl -H '$HOSTADDRESS$' -C '$ARG1$' -2
 }
