@@ -103,6 +103,10 @@ while (<$fh>) {
     $values{lc($1)} = $2 * 1024;
 }
 
+unless (close($fh)) {
+    $np->nagios_die(sprintf("Error closing `%s': %s", MEMINFO, $!));
+}
+
 my $total = $values{'memtotal'};
 my $free = $values{'memfree'};
 # These values may not be present on virtualised systems
