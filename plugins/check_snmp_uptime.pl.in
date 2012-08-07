@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,12 +19,14 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
 # parse the argument provided to make sure it's in the format
 # 12d or 14h or 15m etc.
-sub args_to_secs($) {
+sub args_to_secs {
     my $arg = shift;
     my $secs = -1;
     if ($arg =~ /^(\d+)d$/) {
@@ -41,7 +43,7 @@ sub args_to_secs($) {
 
 # convert a number of seconds into a nicely formatted
 # human readable string
-sub secs_to_string($) {
+sub secs_to_string {
     my $secs = shift;
     if ($secs < 1) {
         return "a very short time";
@@ -199,7 +201,7 @@ if (!defined($result)) {
 
 # Get the value and convert to seconds
 # TimeTicks is an integer in hundredths of a second
-my $uptime = $$result{OID_UPTIME()}/100;
+my $uptime = $result->{OID_UPTIME()}/100;
 my ($code, $message);
 
 $code = $np->check_threshold(

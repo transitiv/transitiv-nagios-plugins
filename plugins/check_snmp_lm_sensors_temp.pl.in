@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -18,7 +18,9 @@
 #
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
+use warnings;
 use strict;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -169,8 +171,7 @@ if (!defined($result)) {
 # disable the alarm now we've run the queries
 alarm 0;
 
-# index the hash by the OID
-my $sensor_value = ($$result{$sensor_value_oid} || 0) / 1000;
+my $sensor_value = ($result->{$sensor_value_oid} || 0) / 1000;
 my $code;
 
 # Output the check result and status according to whether inverse was specified

@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,9 +19,11 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Nagios::Plugin;
 
-sub usage_to_string($$) {
+sub usage_to_string {
     my ($used, $total) = @_;
 
     if ($total >= 1024**3) {

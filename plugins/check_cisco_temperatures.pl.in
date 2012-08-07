@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -156,13 +158,13 @@ my (@descs, @states, @statuses, @thresholds);
 
 foreach my $key (oid_lex_sort(keys %$result)) {
     if (oid_base_match(OID_STATE_TABLE, $key)) {
-        push(@states, $$result{$key});
+        push(@states, $result->{$key});
     } elsif (oid_base_match(OID_STATUS_DESC_TABLE, $key)) {
-        push(@descs, $$result{$key});
+        push(@descs, $result->{$key});
     } elsif (oid_base_match(OID_STATUS_VALUE_TABLE, $key)) {
-        push(@statuses, $$result{$key});
+        push(@statuses, $result->{$key});
     } elsif (oid_base_match(OID_THRESHOLD_TABLE, $key)) {
-        push(@thresholds, $$result{$key});
+        push(@thresholds, $result->{$key});
     }
 }
 

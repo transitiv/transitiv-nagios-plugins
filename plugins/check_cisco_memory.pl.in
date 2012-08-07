@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,10 +19,12 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
-sub get_oid_index($) {
+sub get_oid_index {
     my $oid = shift;
     my $idx = rindex($oid, '.');
 
@@ -139,13 +141,13 @@ my $pools = ();
 foreach my $key (keys(%$mem_table)) {
     if (oid_base_match(OID_MEMORY_POOL_NAME, $key)) {
         my $idx = get_oid_index($key);
-        $pools->{$idx}->{name} = $$mem_table{$key};
+        $pools->{$idx}->{name} = $mem_table->{$key};
     } elsif (oid_base_match(OID_MEMORY_POOL_USED, $key)) {
         my $idx = get_oid_index($key);
-        $pools->{$idx}->{used} = $$mem_table{$key};
+        $pools->{$idx}->{used} = $mem_table->{$key};
     } elsif (oid_base_match(OID_MEMORY_POOL_FREE, $key)) {
         my $idx = get_oid_index($key);
-        $pools->{$idx}->{free} = $$mem_table{$key};
+        $pools->{$idx}->{free} = $mem_table->{$key};
     }
 }
 

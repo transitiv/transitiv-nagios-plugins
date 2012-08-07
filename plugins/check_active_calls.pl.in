@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP;
 use Nagios::Plugin;
 

@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -63,7 +65,7 @@ use constant {
     ],
 };
 
-sub decode_error_status_bitstring($) {
+sub decode_error_status_bitstring {
     my @bits = split(//, unpack('B8', shift));
 
     if (scalar(@bits) != 8) {
@@ -79,7 +81,7 @@ sub decode_error_status_bitstring($) {
     return 'no error bits set?!';
 }
 
-sub stringify_printer_status($) {
+sub stringify_printer_status {
     my $val = shift;
 
     if ($val == PRINTER_IDLE) {
@@ -159,24 +161,24 @@ if (! defined($result)) {
 # disable the alarm now we've run the queries
 alarm 0;
 
-if ($$result{OID_DEVICE_STATUS()} eq 'noSuchObject') {
+if ($result->{OID_DEVICE_STATUS()} eq 'noSuchObject') {
     $np->nagios_die('Device does not appear to support the RFC1759 printer MIB');
-} elsif ($$result{OID_DEVICE_STATUS()} == DEVICE_RUNNING) {
+} elsif ($result->{OID_DEVICE_STATUS()} == DEVICE_RUNNING) {
     $np->nagios_exit(OK, sprintf(
         'Status: %s',
-        stringify_printer_status($$result{OID_PRINTER_STATUS()})
+        stringify_printer_status($result->{OID_PRINTER_STATUS()})
     ));
-} elsif ($$result{OID_DEVICE_STATUS()} == DEVICE_WARNING) {
+} elsif ($result->{OID_DEVICE_STATUS()} == DEVICE_WARNING) {
     $np->nagios_exit(WARNING, sprintf(
         'Status: %s',
-        decode_error_status_bitstring($$result{OID_PRINTER_ERROR_STATUS()})
+        decode_error_status_bitstring($result->{OID_PRINTER_ERROR_STATUS()})
     ));
-} elsif ($$result{OID_DEVICE_STATUS()} == DEVICE_DOWN) {
+} elsif ($result->{OID_DEVICE_STATUS()} == DEVICE_DOWN) {
     $np->nagios_exit(CRITICAL, sprintf(
         'Status: %s',
-        decode_error_status_bitstring($$result{OID_PRINTER_ERROR_STATUS()})
+        decode_error_status_bitstring($result->{OID_PRINTER_ERROR_STATUS()})
     ));
-} elsif ($$result{OID_DEVICE_STATUS()} == DEVICE_TESTING) {
+} elsif ($result->{OID_DEVICE_STATUS()} == DEVICE_TESTING) {
     # TODO: Should this be warning or critical?
     $np->nagios_exit(WARNING, 'Status: testing');
 } else {

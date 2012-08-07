@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -220,7 +222,7 @@ unless (defined($result)) {
 $session->close();
 alarm 0;
 
-my $int_state = $$result{$int_state_oid};
+my $int_state = $result->{$int_state_oid};
 
 if ($int_state eq '') {
     $np->nagios_die(sprintf(
@@ -241,20 +243,20 @@ if ($int_state == STATUS_VALUE_UP) {
 
 $np->add_perfdata(
     label       => 'Link Speed',
-    value       => $$result{$int_speed_oid} || 0,
+    value       => $result->{$int_speed_oid} || 0,
     uom         => 'bps'
 );
 
 $np->add_perfdata(
     label       => 'In Octets',
-    value       => $$result{$in_octets_oid} || 0,
+    value       => $result->{$in_octets_oid} || 0,
     uom         => 'c',
     min         => 0
 );
 
 $np->add_perfdata(
     label       => 'Out Octets',
-    value       => $$result{$out_octets_oid} || 0,
+    value       => $result->{$out_octets_oid} || 0,
     uom         => 'c',
     min         => 0
 );

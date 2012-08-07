@@ -18,7 +18,9 @@
 #
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
+use warnings;
 use strict;
+
 use Net::SNMP;
 use Nagios::Plugin;
 
@@ -36,7 +38,7 @@ It may be used, redistributed and/or modified under the terms of the
 ISC Licence (see http://opensource.org/licenses/isc-license.txt).},
 };
 
-sub bytes_to_string($) {
+sub bytes_to_string {
     my $bytes = shift;
 
     if ($bytes >= 1024**3) {
@@ -152,8 +154,8 @@ if (!defined($result)) {
 }
 
 # Get the memory available/used values
-my $mem_avail = $$result{OID_MEM_SIZE()};
-my $mem_used = $$result{OID_MEM_USED()};
+my $mem_avail = $result->{OID_MEM_SIZE()};
+my $mem_used = $result->{OID_MEM_USED()};
 
 if (grep(/^noSuchObject$/, ($mem_avail, $mem_used))) {
     $np->nagios_die('Device does not appear to support the HOST-RESOURCES-MIB');}

@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -168,9 +170,9 @@ if (!defined($result)) {
     $np->nagios_die($error);
 }
 
-my $cpu_5m = $$result{$np->opts->{'old-device'} ? OID_OLD_CPU_5M : OID_CPU_5M};
-my $cpu_1m = $$result{$np->opts->{'old-device'} ? OID_OLD_CPU_1M : OID_CPU_1M};
-my $cpu_5s = $$result{$np->opts->{'old-device'} ? OID_OLD_CPU_5S : OID_CPU_5S};
+my $cpu_5m = $result->{$np->opts->{'old-device'} ? OID_OLD_CPU_5M : OID_CPU_5M};
+my $cpu_1m = $result->{$np->opts->{'old-device'} ? OID_OLD_CPU_1M : OID_CPU_1M};
+my $cpu_5s = $result->{$np->opts->{'old-device'} ? OID_OLD_CPU_5S : OID_CPU_5S};
 
 my ($code, $message);
 

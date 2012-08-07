@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -69,12 +71,12 @@ use constant {
     STATE   => 3,
 };
 
-sub oid_len($) {
+sub oid_len {
     my @oids = split(/\./, shift);
     return scalar(@oids);
 }
 
-sub string_to_oid($) {
+sub string_to_oid {
     my $str = shift;
     # The first value is the length of the string
     my @oids = (length($str));
@@ -83,7 +85,7 @@ sub string_to_oid($) {
     return join('.', @oids);
 }
 
-sub oid_to_string($$) {
+sub oid_to_string {
     my ($oid, $offset) = @_;
     my @oids = split(/\./, $oid);
     my $strlen = $oids[$offset];
@@ -93,7 +95,7 @@ sub oid_to_string($$) {
     return pack('c*', @oids[$start..$end]);
 }
 
-sub die_usage($$) {
+sub die_usage {
     my ($np, $msg) = @_;
     print $np->opts->_usage() . "\n";
     print $msg . "\n";
@@ -208,8 +210,8 @@ unless (defined($result)) {
 }
 
 my $active = 1;
-my $redundancy = $$result{OID_IPV4_REDUNDANCY_B2B()};
-my $state = $$result{OID_IPV4_REDUNDANCY_STATE()};
+my $redundancy = $result->{OID_IPV4_REDUNDANCY_B2B()};
+my $state = $result->{OID_IPV4_REDUNDANCY_STATE()};
 
 # All services are reported as down when redundancy is enabled and the
 # device is not the active (or "master") node in the cluster. We will
@@ -261,13 +263,13 @@ my $data = {};
 foreach my $oid (keys(%$result)) {
     if (oid_base_match($hits_table, $oid)) {
         my $service = oid_to_string($oid, $hits_table_len);
-        $data->{$service}->{HITS()} = $$result{$oid} if $service;
+        $data->{$service}->{HITS()} = $result->{$oid} if $service;
     } elsif (oid_base_match($bytes_table, $oid)) {
         my $service = oid_to_string($oid, $bytes_table_len);
-        $data->{$service}->{BYTES()} = $$result{$oid} if $service;
+        $data->{$service}->{BYTES()} = $result->{$oid} if $service;
     } elsif (oid_base_match($state_table, $oid)) {
         my $service = oid_to_string($oid, $state_table_len);
-        $data->{$service}->{STATE()} = $$result{$oid} if $service;
+        $data->{$service}->{STATE()} = $result->{$oid} if $service;
     }
 }
 

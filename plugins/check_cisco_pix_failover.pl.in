@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP;
 use Nagios::Plugin;
 
@@ -157,18 +159,18 @@ if (! defined($result)) {
 
 alarm 0;
 
-if ($$result{OID_HW_INFO_PRI()} eq 'noSuchObject') {
+if ($result->{OID_HW_INFO_PRI()} eq 'noSuchObject') {
     $np->nagios_die('Device does not appear to support the CISCO-FIREWALL-MIB');
 }
 
-if ($$result{OID_HW_DETAIL_PRI()} =~ qr/Failover Off/i) {
+if ($result->{OID_HW_DETAIL_PRI()} =~ qr/Failover Off/i) {
     $np->nagios_die('Failover is not configured on this device');
 }
 
-my $status_primary = $$result{OID_HW_STATUS_PRI()};
-my $info_primary = $$result{OID_HW_INFO_PRI()};
-my $status_secondary = $$result{OID_HW_STATUS_SEC()};
-my $info_secondary = $$result{OID_HW_INFO_SEC()};
+my $status_primary = $result->{OID_HW_STATUS_PRI()};
+my $info_primary = $result->{OID_HW_INFO_PRI()};
+my $status_secondary = $result->{OID_HW_STATUS_SEC()};
+my $info_secondary = $result->{OID_HW_INFO_SEC()};
 my $code;
 
 # If the failover configuration is normal we return OK

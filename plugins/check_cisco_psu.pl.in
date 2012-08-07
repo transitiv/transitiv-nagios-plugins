@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
@@ -19,6 +19,8 @@
 # Please send comments, bugs and feature requests to @BUGREPORT@
 
 use strict;
+use warnings;
+
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
@@ -99,7 +101,7 @@ use constant {
     ]
 };
 
-sub strip($) {
+sub strip {
     my $val = shift;
 
     $val =~ s/^\s+//;
@@ -184,11 +186,11 @@ my (@descs, @states, @sources);
 
 foreach my $key (oid_lex_sort(keys %$result)) {
     if (oid_base_match(OID_DESC_TABLE, $key)) {
-        push(@descs, strip($$result{$key}));
+        push(@descs, strip($result->{$key}));
     } elsif (oid_base_match(OID_STATE_TABLE, $key)) {
-        push(@states, $$result{$key});
+        push(@states, $result->{$key});
     } elsif (oid_base_match(OID_SOURCE_TABLE, $key)) {
-        push(@sources, $$result{$key});
+        push(@sources, $result->{$key});
     }
 }
 
