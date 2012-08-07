@@ -24,6 +24,11 @@ use strict;
 use Net::SNMP;
 use Nagios::Plugin;
 
+BEGIN {
+    no warnings 'redefine';
+    *Nagios::Plugin::Functions::get_shortname = sub {};
+}
+
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugins checks memory usage on devices supporting the HOST-RESOURCES-MIB},

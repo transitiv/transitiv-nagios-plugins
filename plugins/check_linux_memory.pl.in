@@ -23,6 +23,11 @@ use warnings;
 
 use Nagios::Plugin;
 
+BEGIN {
+    no warnings 'redefine';
+    *Nagios::Plugin::Functions::get_shortname = sub {};
+}
+
 sub usage_to_string {
     my ($used, $total) = @_;
 

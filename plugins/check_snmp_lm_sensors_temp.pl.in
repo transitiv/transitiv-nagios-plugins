@@ -24,6 +24,11 @@ use strict;
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
+BEGIN {
+    no warnings 'redefine';
+    *Nagios::Plugin::Functions::get_shortname = sub {};
+}
+
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin uses SNMP to query hosts for temperature data reported by

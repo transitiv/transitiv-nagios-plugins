@@ -24,6 +24,11 @@ use warnings;
 use Net::SNMP;
 use Nagios::Plugin;
 
+BEGIN {
+    no warnings 'redefine';
+    *Nagios::Plugin::Functions::get_shortname = sub {};
+}
+
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the number of active calls on a

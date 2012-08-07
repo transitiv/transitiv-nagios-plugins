@@ -23,6 +23,11 @@ use warnings;
 
 use Nagios::Plugin;
 
+BEGIN {
+    no warnings 'redefine';
+    *Nagios::Plugin::Functions::get_shortname = sub {};
+}
+
 sub plugin_die {
     my ($np, $msg) = @_;
     print $np->opts->_usage . "\n";

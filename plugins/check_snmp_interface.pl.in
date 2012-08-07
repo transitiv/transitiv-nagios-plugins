@@ -24,6 +24,11 @@ use warnings;
 use Net::SNMP qw(:snmp);
 use Nagios::Plugin;
 
+BEGIN {
+    no warnings 'redefine';
+    *Nagios::Plugin::Functions::get_shortname = sub {};
+}
+
 use constant {
     VERSION     => '@VERSION@',
     BLURB       => q{This plugin checks the status of an interface on devices supporting
