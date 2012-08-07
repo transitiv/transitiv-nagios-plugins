@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!@PERL@
 # vim: et sts=4 sw=4 ts=4
 # nagios: +epn
 #
