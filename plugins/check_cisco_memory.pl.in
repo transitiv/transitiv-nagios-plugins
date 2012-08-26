@@ -140,6 +140,7 @@ unless (defined($mem_table)) {
 }
 
 $session->close();
+alarm 0;
 
 my $pools = ();
 
