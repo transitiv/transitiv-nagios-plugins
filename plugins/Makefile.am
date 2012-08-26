@@ -13,7 +13,10 @@ TESTS = t/check_wordpress.t \
 	t/check_apcupsd_ups.t \
 	t/check_linux_memory.t \
 	t/check_cisco_memory.t \
-	t/check_cisco_css_content_rule.t
+	t/check_cisco_css_content_rule.t \
+	t/check_netscreen_load.t \
+	t/check_netscreen_memory.t \
+	t/check_netscreen_sessions.t
 
 libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_printer.pl \
@@ -30,7 +33,10 @@ libexec_SCRIPTS = check_wordpress.pl \
 	check_linux_memory.pl \
 	check_apcupsd_ups.pl \
 	check_cisco_memory.pl \
-	check_cisco_css_content_rule.pl
+	check_cisco_css_content_rule.pl \
+	check_netscreen_load.pl \
+	check_netscreen_memory.pl \
+	check_netscreen_sessions.pl
 
 CLEANFILES = $(libexec_SCRIPTS)
 EXTRA_DIST = $(TESTS) \
@@ -49,7 +55,10 @@ EXTRA_DIST = $(TESTS) \
 	check_linux_memory.pl.in \
 	check_apcupsd_ups.pl.in \
 	check_cisco_memory.pl.in \
-	check_cisco_css_content_rule.pl
+	check_cisco_css_content_rule.pl.in \
+	check_netscreen_load.pl.in \
+	check_netscreen_memory.pl.in \
+	check_netscreen_sessions.pl.in
 
 do_subst = sed -e 's,[@]VERSION[@],$(PACKAGE_VERSION),g' \
 	-e 's,[@]BUGREPORT[@],$(PACKAGE_BUGREPORT),g' \
