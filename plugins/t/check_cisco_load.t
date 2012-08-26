@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w -I ..
 
 use strict;
-use Test::More tests => 11;
+use Test::More tests => 15;
 use PluginTester;
 
 my $plugin = './check_cisco_load.pl';
@@ -29,6 +29,16 @@ like($result->output, qr/Missing argument: critical/, 'Output for missing critic
 $result = PluginTester->exec("${plugin} -H ${invalid_domain} -c 60,70,80");
 ok($result->exit_status == 3, 'UNKNOWN returned with missing warning argument');
 like($result->output, qr/Missing argument: warning/, 'Output for missing warning argument');
+
+# test invalid critical argument
+$result = PluginTester->exec("${plugin} -H ${invalid_domain} -w 60,70,80 -c 90");
+ok($result->exit_status == 3, 'UNKNOWN returned with invalid critical argument');
+like($result->output, qr/Invalid format for critical argument/, 'Output for invalid critical argument');
+
+# test invalid warning argument
+$result = PluginTester->exec("${plugin} -H ${invalid_domain} -c 60,70,80 -w 80");
+ok($result->exit_status == 3, 'UNKNOWN returned with invalid warning argument');
+like($result->output, qr/Invalid format for warning argument/, 'Output for invalid warning argument');
 
 # test a (hopefully) unresolvable domain
 $result = PluginTester->exec("${plugin} -H ${invalid_domain} -w 60,70,80 -c 70,80,90");

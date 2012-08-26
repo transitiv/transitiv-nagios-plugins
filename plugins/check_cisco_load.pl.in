@@ -120,17 +120,12 @@ $np->getopts;
 
 my @warnings = split(/,/, $np->opts->warning);
 if (scalar(@warnings) != 3) {
-    plugin_die(
-        $np,
-        "Invalid format for warning argument, try --help"
-    );
+    plugin_die($np, 'Invalid format for warning argument, try --help');
 }
 
 my @criticals = split(/,/, $np->opts->critical);
 if (scalar(@criticals) != 3) {
-    plugin_die(
-        "Invalid format for critical argument, try --help"
-    );
+    plugin_die($np, 'Invalid format for critical argument, try --help');
 }
 
 alarm $np->opts->timeout;
