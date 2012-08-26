@@ -261,6 +261,7 @@ unless (defined($result)) {
     $np->nagios_die($error);
 }
 
+$session->close();
 alarm 0;
 
 my $data = {};

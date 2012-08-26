@@ -162,6 +162,7 @@ if (! defined($result)) {
     $np->nagios_die($error);
 }
 
+$session->close();
 alarm 0;
 
 if ($result->{OID_HW_INFO_PRI()} eq 'noSuchObject') {

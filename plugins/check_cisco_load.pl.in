@@ -175,6 +175,7 @@ if (!defined($result)) {
     $np->nagios_die($error);
 }
 
+$session->close();
 my $cpu_5m = $result->{$np->opts->{'old-device'} ? OID_OLD_CPU_5M : OID_CPU_5M};
 my $cpu_1m = $result->{$np->opts->{'old-device'} ? OID_OLD_CPU_1M : OID_CPU_1M};
 my $cpu_5s = $result->{$np->opts->{'old-device'} ? OID_OLD_CPU_5S : OID_CPU_5S};
