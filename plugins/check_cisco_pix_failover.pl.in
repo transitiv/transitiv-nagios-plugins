@@ -142,17 +142,15 @@ if (! defined($session)) {
     $np->nagios_die($error);
 }
 
-my @oids = (
-    OID_HW_INFO_PRI,
-    OID_HW_INFO_SEC,
-    OID_HW_STATUS_PRI,
-    OID_HW_STATUS_SEC,
-    OID_HW_DETAIL_PRI,
-    OID_HW_DETAIL_SEC,
-);
-
 my $result = $session->get_request(
-    -varbindlist    => \@oids
+    -varbindlist    => [
+        OID_HW_INFO_PRI,
+        OID_HW_INFO_SEC,
+        OID_HW_STATUS_PRI,
+        OID_HW_STATUS_SEC,
+        OID_HW_DETAIL_PRI,
+        OID_HW_DETAIL_SEC,
+    ]
 );
 
 if (! defined($result)) {

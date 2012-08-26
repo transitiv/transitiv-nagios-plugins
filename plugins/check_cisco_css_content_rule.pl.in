@@ -198,13 +198,11 @@ unless (defined($session)) {
     $np->nagios_die($error);
 }
 
-my @oids = (
-    OID_IPV4_REDUNDANCY_B2B,
-    OID_IPV4_REDUNDANCY_STATE
-);
-
 my $result = $session->get_request(
-    -varbindlist    => \@oids
+    -varbindlist    => [
+        OID_IPV4_REDUNDANCY_B2B,
+        OID_IPV4_REDUNDANCY_STATE
+    ]
 );
 
 unless (defined($result)) {
@@ -244,14 +242,12 @@ my $state_table = sprintf('%s.%s.%s',
 );
 my $state_table_len = oid_len($state_table);
 
-@oids = (
-    $hits_table,
-    $bytes_table,
-    $state_table,
-);
-
 $result = $session->get_entries(
-    -columns    => \@oids
+    -columns    => [
+        $hits_table,
+        $bytes_table,
+        $state_table,
+    ]
 );
 
 unless (defined($result)) {
