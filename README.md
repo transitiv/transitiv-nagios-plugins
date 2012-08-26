@@ -3,9 +3,9 @@
 This package contains several useful Nagios/Icinga plugins, complete
 with configuration files, PNP4Nagios templates and tests.
 
-All plugins support being run by the Nagios embedded perl interpreter (EPN).
-This aids performance on large installations (see the relevant Nagios
-documentation for further info).
+All plugins support being run by the Nagios embedded perl interpreter
+(EPN).  This aids performance on large installations (see the relevant
+Nagios documentation for further info).
 
 ## Requirements
 
@@ -21,10 +21,10 @@ documentation for further info).
 * `check_cisco_fans.pl` Checks the status of fans on Cisco devices
   supporting the CISCO-ENVMON-MIB.
 * `check_cisco_load.pl` Checks the CPU load average against user defined
-  thresholds on Cisco devices supporting the CISCO-PROCESS-MIB or
-  the OLD-CISCO-CPU-MIB.
+  thresholds on Cisco devices supporting the CISCO-PROCESS-MIB or the
+  OLD-CISCO-CPU-MIB.
 * `check_cisco_memory.pl` Checks the memory usage of the various memory
-   pools on Cisco devices supporting the CISCO-MEMORY-POOL-MIB.
+  pools on Cisco devices supporting the CISCO-MEMORY-POOL-MIB.
 * `check_cisco_psu.pl` Checks the status of power supply units on Cisco
   devices supporting the CISCO-ENVMON-MIB.
 * `check_cisco_temperatures.pl` Checks the status of temperature sensors
@@ -41,6 +41,12 @@ documentation for further info).
 * `check_snmp_interface.pl` Checks the status of a network interface via
   SNMP. 64 bit counters are supported in conjunction with SNMPv2.
   Performance data is returned for link speed and input/output octets.
+* `check_netscreen_load.pl` Checks the CPU load on Netscreen (now
+  Juniper) devices supporting the NETSCREEN-RESOURCE-MIB.
+* `check_netscreen_memory.pl` Checks memory usage on Netscreen (now
+  Juniper) devices supporting the NETSCREEN-RESOURCE-MIB.
+* `check_netscreen_sessions.pl` Checks session usage on Netscreen (now
+  Juniper) devices supporting the NETSCREEN-RESOURCE-MIB.
 
 ### Other
 
