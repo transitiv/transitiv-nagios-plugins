@@ -13,7 +13,10 @@ sysconf_DATA = check_wordpress.cfg \
 	check_apcupsd_ups.cfg \
 	check_snmp_lm_sensors_temp.cfg \
 	check_cisco_memory.cfg \
-	check_cisco_css_content_rule.cfg
+	check_cisco_css_content_rule.cfg \
+	check_netscreen_load.cfg \
+	check_netscreen_memory.cfg \
+	check_netscreen_sessions.cfg
 
 EXTRA_DIST = check_wordpress.cfg.in \
 	check_cisco_fans.cfg.in \
@@ -30,7 +33,10 @@ EXTRA_DIST = check_wordpress.cfg.in \
 	check_apcupsd_ups.cfg.in \
 	check_snmp_lm_sensors_temp.cfg.in \
 	check_cisco_memory.cfg.in \
-	check_cisco_css_content_rule.cfg.in
+	check_cisco_css_content_rule.cfg.in \
+	check_netscreen_load.cfg.in \
+	check_netscreen_memory.cfg.in \
+	check_netscreen_sessions.cfg.in
 
 CLEANFILES = $(sysconf_DATA)
 

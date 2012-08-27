@@ -1,0 +1,4 @@
+define command {
+	command_name	check_netscreen_sessions
+	command_line	@PLUGINDIR@/check_netscreen_sessions.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
