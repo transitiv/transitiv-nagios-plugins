@@ -57,8 +57,8 @@ AM_CONDITIONAL([PNPTEMPLATES],
 
 AC_CONFIG_FILES([
 	Makefile
-	nagios-config/Makefile
+	configs/Makefile
 	plugins/Makefile
-	pnptemplates/Makefile
+	templates/Makefile
 ])
 AC_OUTPUT
