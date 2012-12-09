@@ -1,0 +1,28 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_snmp_processor_load.pl
+# Distributed with @PACKAGE_STRING@
+#
+
+$opt[1] = "--vertical-label '%' --slope-mode -l0 --title '$hostname - {$this->MACRO['DISP_SERVICEDESC']}'";
+$ds_name[1] = 'CPU Load';
+$n = 1;
+$def[1] = '';
+foreach (array_values($this->DS) as $value) {
+	$def[1] .= rrd::def("cpu$n", $value['RRDFILE'], $value['DS'], 'AVERAGE');
+	$def[1] .= rrd::line1("cpu$n", rrd::color($n), $value['LABEL']);
+	$def[1] .= rrd::gprint("cpu$n", array('LAST', 'AVERAGE', 'MAX'), '%6.0lf%%');
+
+	++$n;
+}
+
+if (!empty($this->DS[0]['WARN'])) {
+	$def[1] .= rrd::comment('\s');
+	$def[1] .= rrd::comment("Warning\: {$this->DS[0]['WARN']}%\\n");
+}
+
+if (!empty($this->DS[0]['CRIT']))
+	$def[1] .= rrd::comment("Critical\: {$this->DS[0]['CRIT']}%\\n");
+
+?>
