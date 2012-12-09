@@ -1,0 +1,29 @@
+<?php
+#
+# @COPYRIGHT@
+# PNP4Nagios graph template for check_snmp_storage.pl
+# Distributed with @PACKAGE_STRING@
+#
+
+$n = 1;
+foreach (array_values($this->DS) as $value) {
+	$label = str_replace('_', '/', $value['LABEL']);
+	$rrdlabel = str_replace(':', '\:', $label);
+	$ds_name[$n] = $label;
+	$opt[$n] = "--vertical-label 'Bytes' --slope-mode -l0 --title '$hostname - {$this->MACRO['DISP_SERVICEDESC']}'";
+	$def[$n] = rrd::def('usage', $value['RRDFILE'], $value['DS'], 'AVERAGE');
+	$def[$n] .= rrd::area('usage', '#3F0', rrd::cut($rrdlabel));
+	$def[$n] .= rrd::gprint('usage', array('LAST', 'AVERAGE', 'MAX'), '%6.2lf%sB');
+	$def[$n] .= rrd::line1('usage', '#4F8A10');
+
+	if (!empty($value['WARN']))
+		$def[$n] .= rrd::hrule($value['WARN'], '#FFFF00', 'Warning\n');
+	if (!empty($value['CRIT']))
+		$def[$n] .= rrd::hrule($value['CRIT'], '#FF0000', 'Critical\n');
+	if (!empty($value['MAX']))
+		$def[$n] .= rrd::hrule($value['MAX'], '#000', 'Total');
+
+	++$n;
+}
+
+?>

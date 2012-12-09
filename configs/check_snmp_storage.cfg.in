@@ -1,0 +1,19 @@
+define command {
+	command_name	check_snmp_storage
+	command_line	@PLUGINDIR@/check_snmp_storage.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$'
+}
+
+define command {
+	command_name	check_snmp_storage_ram
+	command_line	@PLUGINDIR@/check_snmp_storage.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$' --ram
+}
+
+define command {
+	command_name	check_snmp_storage_virtual
+	command_line	@PLUGINDIR@/check_snmp_storage.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$' --virtual
+}
+
+define command {
+	command_name	check_snmp_storage_fixed
+	command_line	@PLUGINDIR@/check_snmp_storage.pl -H '$HOSTADDRESS$' -C '$ARG1$' -w '$ARG2$' -c '$ARG3$' --fixed
+}

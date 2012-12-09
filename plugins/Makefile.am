@@ -17,7 +17,8 @@ TESTS = t/check_wordpress.t \
 	t/check_netscreen_load.t \
 	t/check_netscreen_memory.t \
 	t/check_netscreen_sessions.t \
-	t/check_snmp_processor_load.t
+	t/check_snmp_processor_load.t \
+	t/check_snmp_storage.t
 
 libexec_SCRIPTS = check_wordpress.pl \
 	check_snmp_printer.pl \
@@ -38,7 +39,8 @@ libexec_SCRIPTS = check_wordpress.pl \
 	check_netscreen_load.pl \
 	check_netscreen_memory.pl \
 	check_netscreen_sessions.pl \
-	check_snmp_processor_load.pl
+	check_snmp_processor_load.pl \
+	check_snmp_storage.pl
 
 CLEANFILES = $(libexec_SCRIPTS)
 EXTRA_DIST = $(TESTS) \
@@ -61,7 +63,8 @@ EXTRA_DIST = $(TESTS) \
 	check_netscreen_load.pl.in \
 	check_netscreen_memory.pl.in \
 	check_netscreen_sessions.pl.in \
-	check_snmp_processor_load.pl.in
+	check_snmp_processor_load.pl.in \
+	check_snmp_storage.pl.in
 
 do_subst = sed -e 's,[@]VERSION[@],$(PACKAGE_VERSION),g' \
 	-e 's,[@]BUGREPORT[@],$(PACKAGE_BUGREPORT),g' \
