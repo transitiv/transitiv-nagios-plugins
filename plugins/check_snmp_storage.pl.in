@@ -272,8 +272,12 @@ while (my ($oid, $value) = each(%$result)) {
     if (oid_base_match(OID_STORAGE_UNITS_TABLE, $oid)) {
         $data->{$idx}->{unit} = $value;
     } elsif (oid_base_match(OID_STORAGE_SIZE_TABLE, $oid)) {
+        # handle integer overflow
+        $value += 2**32 if $value < 0;
         $data->{$idx}->{size} = $value;
     } elsif (oid_base_match(OID_STORAGE_USED_TABLE, $oid)) {
+        # handle integer overflow
+        $value += 2**32 if $value < 0;
         $data->{$idx}->{used} = $value;
     } elsif (defined($typefilter) && oid_base_match(OID_STORAGE_TYPE_TABLE, $oid)) {
         if (!exists($typefilter->{$value})) {
