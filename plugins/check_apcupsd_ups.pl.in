@@ -73,6 +73,34 @@ use constant {
     FORMAT_BATTV            => qr/^([.\d]+) Volts$/
 };
 
+use constant STATUS2STRING => {
+    STATUS_CALIBRATION()    => 'calibrating',
+    STATUS_TRIM()           => 'trimming',
+    STATUS_BOOST()          => 'boosting',
+    STATUS_ONLINE()         => 'online',
+    STATUS_ONBATTERY()      => 'on battery',
+    STATUS_OVERLOADED()     => 'overloaded',
+    STATUS_LOWBATTERY()     => 'low battery',
+    STATUS_REPLACEBATTERY() => 'replace battery',
+    STATUS_NOBATTERY()      => 'no battery',
+    STATUS_COMMLOST()       => 'communications lost',
+    STATUS_SHUTDOWN()       => 'shutting down',
+};
+
+use constant STATUS2CODE => {
+    STATUS_CALIBRATION()    => WARNING,
+    STATUS_TRIM()           => WARNING,
+    STATUS_BOOST()          => WARNING,
+    STATUS_ONLINE()         => OK,
+    STATUS_ONBATTERY()      => WARNING,
+    STATUS_OVERLOADED()     => CRITICAL,
+    STATUS_LOWBATTERY()     => CRITICAL,
+    STATUS_REPLACEBATTERY() => CRITICAL,
+    STATUS_NOBATTERY()      => CRITICAL,
+    STATUS_COMMLOST()       => UNKNOWN,
+    STATUS_SHUTDOWN()       => CRITICAL,
+};
+
 my $np = Nagios::Plugin->new(
     version     => VERSION,
     blurb       => BLURB,
@@ -167,6 +195,8 @@ if (!defined($status)) {
     $np->nagios_die("Could not determine UPS status");
 }
 
+my @statuses = split(' ', $status);
+
 if (defined($loadpct) && $loadpct =~ FORMAT_LOADPCT) {
     $loadpct = $1;
 } else {
@@ -233,51 +263,22 @@ if (defined($battv) && $battv =~ FORMAT_BATTV) {
     );
 }
 
-my $status_code;
-my $status_string;
+my @states;
+my @codes;
 
-if ($status eq STATUS_CALIBRATION) {
-    $status_code = WARNING;
-    $status_string = "calibrating";
-} elsif ($status eq STATUS_TRIM) {
-    $status_code = WARNING;
-    $status_string = "trimming voltage";
-} elsif ($status eq STATUS_BOOST) {
-    $status_code = WARNING;
-    $status_string = "boosting voltage";
-} elsif ($status eq STATUS_ONLINE) {
-    $status_code = OK;
-    $status_string = "online";
-} elsif ($status eq STATUS_ONBATTERY) {
-    $status_code = WARNING;
-    $status_string = "on battery";
-} elsif ($status eq STATUS_OVERLOADED) {
-    $status_code = CRITICAL;
-    $status_string = "overloaded";
-} elsif ($status eq STATUS_LOWBATTERY) {
-    $status_code = CRITICAL;
-    $status_string = "low battery";
-} elsif ($status eq STATUS_REPLACEBATTERY) {
-    $status_code = CRITICAL;
-    $status_string = "replace battery";
-} elsif ($status eq STATUS_NOBATTERY) {
-    $status_code = CRITICAL;
-    $status_string = "no battery";
-} elsif ($status eq STATUS_COMMLOST) {
-    $status_code = UNKNOWN;
-    $status_string = "communications lost";
-} elsif ($status eq STATUS_SHUTDOWN) {
-    $status_code = CRITICAL;
-    $status_string = "shutting down";
-} else {
-    $np->nagios_exit(UNKNOWN, sprintf(
-        "Unrecognised device status: %s",
-        $status
-    ));
+foreach my $s (@statuses) {
+    if (!defined(STATUS2CODE->{$s})) {
+        push(@codes, UNKNOWN);
+        push(@states, $s);
+    } else {
+        push(@codes, STATUS2CODE->{$s});
+        push(@states, STATUS2STRING->{$s});
+    }
 }
 
-$np->add_message($status_code,
-    "Status: ${status_string}"
+$np->add_message(
+    $np->max_state_alt(@codes),
+    'Status: ' . join('/', @states)
 );
 
 my $load_code = $np->check_threshold(
