@@ -206,7 +206,15 @@ if (!defined($result)) {
 
 # Get the value and convert to seconds
 # TimeTicks is an integer in hundredths of a second
-my $uptime = $result->{OID_UPTIME()}/100;
+my $timeticks = $result->{OID_UPTIME()};
+
+# Handle counter wraps as best we can
+if ($timeticks < 0) {
+    $timeticks += 2**32;
+}
+
+my $uptime = $timeticks / 100;
+
 my ($code, $message);
 
 $code = $np->check_threshold(
