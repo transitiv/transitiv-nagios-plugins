@@ -1,7 +1,7 @@
 AC_PREREQ([2.65])
 AC_INIT([transitiv-nagios-plugins], [0.8], [nagios@transitiv.co.uk])
 AC_SUBST(PACKAGE_COPYRIGHT,
-  "Copyright 2012 (c) Transitiv Technologies <info@transitiv.co.uk>"
+  "Copyright 2015 (c) Transitiv Technologies <info@transitiv.co.uk>"
 )
 AM_INIT_AUTOMAKE([color-tests dist-bzip2 foreign no-dist-gzip parallel-tests])
 
